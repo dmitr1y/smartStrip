@@ -5,7 +5,7 @@
   Отправляем в монитор порта номер режима, он активируется
 */
 
-#include "FastLED.h"          // библиотека для работы с лентой
+#include <FastLED.h>          // библиотека для работы с лентой
 
 #define LED_COUNT 120          // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
@@ -51,20 +51,20 @@ int isat = 0;                //-SATURATION (0-255)
 int bouncedirection = 0;     //-SWITCH FOR COLOR BOUNCE (0-1)
 float tcount = 0.0;          //-INC VAR FOR SIN LOOPS
 int lcount = 0;              //-ANOTHER COUNTING VAR
-// ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
-int voltInput = 1;
+
+// Voltmeter
+int VmeterInPin = 1; 
 float Vout = 0.00;
 float Vin = 0.00;
 float R1 = 100000.00; // resistance of R1 (100K) 
 float R2 = 10000.00; // resistance of R2 (10K) 
-
-
+// ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
 
 void setup()
 {
   Serial.begin(9600);              // открыть порт для связи
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
-  pinMode(voltInput, INPUT); //assigning the input por
+  pinMode(VmeterInPin, INPUT); //assigning the input por
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
   one_color_all(0, 0, 0);          // погасить все светодиоды
   LEDS.show();                     // отослать команду
@@ -74,7 +74,8 @@ void loop() {
   voltMeter();
   if (Serial.available() > 0) {     // если что то прислали
     ledMode = Serial.parseInt();    // парсим в тип данных int
-    Serial.print("switch to: "+String(ledMode)+"\n");
+    Serial.println("switch to: "+String(ledMode));
+    Serial.println(prepareData(ledMode,2,3,4));
     change_mode(ledMode);           // меняем режим через change_mode (там для каждого режима стоят цвета и задержки)
   }
   switch (ledMode) {
@@ -134,16 +135,20 @@ void loop() {
 
 void voltMeter(){
   int val = 0;
-   val = analogRead(voltInput);//reads the analog input
+   val = analogRead(VmeterInPin);//reads the analog input
    Vout = (val * 5.00) / 1024.00; // formula for calculating voltage out i.e. V+, here 5.00
    Vin = Vout / (R2/(R1+R2))-0.1; // formula for calculating voltage in i.e. GND
    if (Vin<0.09)//condition 
    {
      Vin=0.00;//statement to quash undesired reading !
      } 
-  Serial.print("\t Voltage of the given source = ");
-  Serial.println(Vin);
-  delay(100);
+  // Serial.print("\t Voltage of the given source = ");
+  // Serial.println(Vin);
+  // delay(100);
+}
+
+String prepareData(int mode, int max_bright, int voltValue, int color){
+  return "#mode:"+String(mode)+"#bright:"+String(max_bright)+"#voltMeter:"+String(voltValue)+"#color:"+String(color)+"\0";
 }
 
 void change_mode(int newmode) {
