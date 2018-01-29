@@ -1,14 +1,9 @@
-/*
-  Скетч создан на основе FASTSPI2 EFFECTS EXAMPLES автора teldredge (www.funkboxing.com)
-  А также вот этой статьи https://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/#cylon
-  Доработан, переведён и разбит на файлы 2017 AlexGyver
-  Отправляем в монитор порта номер режима, он активируется
-*/
-
 #include <FastLED.h>          // библиотека для работы с лентой
 
 #define LED_COUNT 120          // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
+
+#define V_METER_PIN 1 //пин вольтметра
 
 int max_bright = 51;         // максимальная яркость (0 - 255)
 int ledMode = 3;
@@ -22,7 +17,7 @@ int ledMode = 3;
 
 // цвета мячиков для режима
 byte ballColors[3][3] = {
-  {0xff, 0, 0},
+  {0xff, 0   , 0   },
   {0xff, 0xff, 0xff},
   {0   , 0   , 0xff}
 };
@@ -39,10 +34,10 @@ int thisstep = 10;           //-FX LOOPS DELAY VAR
 int thishue = 0;             //-FX LOOPS DELAY VAR
 int thissat = 255;           //-FX LOOPS DELAY VAR
 
-int thisindex = 0;
-int thisRED = 0;
-int thisGRN = 0;
-int thisBLU = 0;
+// int thisindex = 0;
+// int thisRED = 0;
+// int thisGRN = 0;
+// int thisBLU = 0;
 
 int idex = 0;                //-LED INDEX (0 to LED_COUNT-1
 int ihue = 0;                //-HUE (0-255)
@@ -52,31 +47,53 @@ int bouncedirection = 0;     //-SWITCH FOR COLOR BOUNCE (0-1)
 float tcount = 0.0;          //-INC VAR FOR SIN LOOPS
 int lcount = 0;              //-ANOTHER COUNTING VAR
 
-// Voltmeter
-int VmeterInPin = 1; 
-float Vout = 0.00;
-float Vin = 0.00;
-float R1 = 100000.00; // resistance of R1 (100K) 
-float R2 = 10000.00; // resistance of R2 (10K) 
+char *serialReaded=NULL;
+int serialLength=0;
 // ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
+
+enum BT_DATA{
+    LED_MODE=1,
+    LED_BRIGHTNESS=2,
+    LED_COLOR=3,
+    SYS_VOLT=4
+};
 
 void setup()
 {
   Serial.begin(9600);              // открыть порт для связи
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
-  pinMode(VmeterInPin, INPUT); //assigning the input por
+  pinMode(V_METER_PIN, INPUT);     //assigning the input port
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
   one_color_all(0, 0, 0);          // погасить все светодиоды
   LEDS.show();                     // отослать команду
 }
 
 void loop() {
-  voltMeter();
+  char c;
   if (Serial.available() > 0) {     // если что то прислали
-    ledMode = Serial.parseInt();    // парсим в тип данных int
-    Serial.println("switch to: "+String(ledMode));
-    Serial.println(prepareData(ledMode,2,3,4));
-    change_mode(ledMode);           // меняем режим через change_mode (там для каждого режима стоят цвета и задержки)
+    c=Serial.read();
+    if(c=='@'){
+      // serialReaded[serialLength]='\0';
+      // for (int i = 0; i < serialLength; ++i)
+      // {
+      //   Serial.print("["+String(i)+"] ");
+      //   Serial.println(serialReaded[i]);
+      // }
+      Serial.print("\n");
+      parseData(serialReaded);  
+      serialLength=0;
+      free(serialReaded);
+      serialReaded=NULL;
+      voltMeter();
+      // Serial.flush();
+    }
+    else{   
+      if(serialReaded!=NULL)
+          serialReaded=(char*)realloc(serialReaded,serialLength* sizeof(char)+1);
+      else
+          serialReaded=(char*)malloc(sizeof(char));
+      serialReaded[serialLength++]=c;
+    }    
   }
   switch (ledMode) {
     case 999: break;                           // пазуа
@@ -133,22 +150,69 @@ void loop() {
   }
 }
 
-void voltMeter(){
+float voltMeter(){
+  // Voltmeter
+  float R1 = 100000.00; // resistance of R1 (100K) 
+  float R2 = 10000.00; // resistance of R2 (10K) 
   int val = 0;
-   val = analogRead(VmeterInPin);//reads the analog input
-   Vout = (val * 5.00) / 1024.00; // formula for calculating voltage out i.e. V+, here 5.00
-   Vin = Vout / (R2/(R1+R2))-0.1; // formula for calculating voltage in i.e. GND
-   if (Vin<0.09)//condition 
-   {
-     Vin=0.00;//statement to quash undesired reading !
-     } 
-  // Serial.print("\t Voltage of the given source = ");
-  // Serial.println(Vin);
-  // delay(100);
+  val = analogRead(V_METER_PIN);//reads the analog input
+  float Vout = (val * 5.00) / 1024.00; // formula for calculating voltage out i.e. V+, here 5.00
+  float Vin = Vout / (R2/(R1+R2))-0.1; // formula for calculating voltage in i.e. GND
+  if (Vin<0.09)//condition 
+    Vin=0.00;//statement to quash undesired reading !
+  return Vin;
 }
 
-String prepareData(int mode, int max_bright, int voltValue, int color){
-  return "#mode:"+String(mode)+"#bright:"+String(max_bright)+"#voltMeter:"+String(voltValue)+"#color:"+String(color)+"\0";
+char* prepareData(int mode, int max_bright, int voltValue, int color){
+  Serial.println("##prepareData:");
+  char data[60];
+  String str="#mode:"+String(mode,DEC)+"#bright:"+String(max_bright,DEC)+"#voltMeter:"+String(voltValue,DEC)+"#color:"+String(color,DEC);
+  str.toCharArray(data,sizeof(data));
+  Serial.println(data);
+  return data;
+}
+
+void parseData(char* data){
+  if(!data) return;
+  Serial.println("##parseData:");
+  Serial.println(data);
+  char *parsed=strtok(data, "#");
+  char **varArr=NULL;
+
+  int i=0;
+  while (parsed!=NULL){
+    varArr=(char**)realloc(varArr,sizeof(char)*(i+1));
+    varArr[i]=(char*)malloc(sizeof(parsed));
+    varArr[i]=parsed;
+    i++;
+    parsed=strtok(NULL, "#");
+  }
+  for (int j = 0; j < i; ++j) {
+      char *tmp=strtok(varArr[j],":");
+      int varName=atoi(tmp);
+      tmp=strtok(NULL,":");
+      int varVal=atoi(tmp);
+      switch (varName){
+          case LED_MODE:
+              Serial.print("LED_MODE");
+              ledMode=varVal;
+              change_mode(ledMode);
+              break;
+          case LED_BRIGHTNESS:
+              Serial.print("LED_BRIGHTNESS");
+              break;
+          case LED_COLOR:
+              Serial.print("LED_COLOR");
+              break;
+          case SYS_VOLT:
+              Serial.print("SYS_VOLT");
+              break;
+          default:
+              break;
+      }
+      Serial.print(" switched to "+String(varVal)+"\n");
+  }
+  free(varArr);
 }
 
 void change_mode(int newmode) {
