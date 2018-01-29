@@ -210,7 +210,8 @@ void parseData(char* data){
           default:
               break;
       }
-      Serial.print(" switched to "+String(varVal)+"\n");
+      if (varName)
+        Serial.print(" switched to "+String(varVal)+"\n");
   }
   free(varArr);
 }
