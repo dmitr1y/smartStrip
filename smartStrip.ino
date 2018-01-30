@@ -47,15 +47,13 @@ int bouncedirection = 0;     //-SWITCH FOR COLOR BOUNCE (0-1)
 float tcount = 0.0;          //-INC VAR FOR SIN LOOPS
 int lcount = 0;              //-ANOTHER COUNTING VAR
 
-char *serialReaded=NULL;
-int serialLength=0;
 // ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
 
 enum BT_DATA{
     LED_MODE=1,
-    LED_BRIGHTNESS=2,
-    LED_COLOR=3,
-    SYS_VOLT=4
+    LED_BRIGHTNESS,
+    LED_COLOR,
+    SYS_VOLT
 };
 
 void setup()
@@ -71,29 +69,12 @@ void setup()
 void loop() {
   char c;
   if (Serial.available() > 0) {     // если что то прислали
-    c=Serial.read();
-    if(c=='@'){
-      // serialReaded[serialLength]='\0';
-      // for (int i = 0; i < serialLength; ++i)
-      // {
-      //   Serial.print("["+String(i)+"] ");
-      //   Serial.println(serialReaded[i]);
-      // }
-      Serial.print("\n");
-      parseData(serialReaded);  
-      serialLength=0;
-      free(serialReaded);
-      serialReaded=NULL;
-      voltMeter();
-      // Serial.flush();
-    }
-    else{   
-      if(serialReaded!=NULL)
-          serialReaded=(char*)realloc(serialReaded,serialLength* sizeof(char)+1);
-      else
-          serialReaded=(char*)malloc(sizeof(char));
-      serialReaded[serialLength++]=c;
-    }    
+    String serialReaded=Serial.readStringUntil('@');   // Until CR (Carriage Return)
+    Serial.println(serialReaded);
+    char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
+    serialReaded.toCharArray(buf,serialReaded.length()+1);
+    parseData(buf);
+    free(buf);
   }
   switch (ledMode) {
     case 999: break;                           // пазуа
@@ -141,10 +122,8 @@ void loop() {
     case 42: theaterChase(0xff, 0, 0, thisdelay); break;                            // бегущие каждые 3 (ЧИСЛО СВЕТОДИОДОВ ДОЛЖНО БЫТЬ НЕЧЁТНОЕ)
     case 43: theaterChaseRainbow(thisdelay); break;                                 // бегущие каждые 3 радуга (ЧИСЛО СВЕТОДИОДОВ ДОЛЖНО БЫТЬ КРАТНО 3)
     case 44: Strobe(0xff, 0xff, 0xff, 10, thisdelay, 1000); break;                  // стробоскоп
-
     case 45: BouncingBalls(0xff, 0, 0, 3); break;                                   // прыгающие мячики
     case 46: BouncingColoredBalls(3, ballColors); break;                            // прыгающие мячики цветные
-
     case 888: demo_modeA(); break;             // длинное демо
     case 889: demo_modeB(); break;             // короткое демо
   }
@@ -173,30 +152,41 @@ char* prepareData(int mode, int max_bright, int voltValue, int color){
 }
 
 void parseData(char* data){
-  if(!data) return;
   Serial.println("##parseData:");
   Serial.println(data);
+
   char *parsed=strtok(data, "#");
-  char **varArr=NULL;
+  char **varArr=(char**)malloc(sizeof(char));
 
   int i=0;
   while (parsed!=NULL){
-    varArr=(char**)realloc(varArr,sizeof(char)*(i+1));
-    varArr[i]=(char*)malloc(sizeof(parsed));
+    varArr=(char**)realloc(varArr,sizeof(char*)*(i+1));
+    varArr[i]=(char*)malloc(sizeof(char*));
     varArr[i]=parsed;
     i++;
     parsed=strtok(NULL, "#");
   }
+
+  Serial.println("i="+String(i));
+
+  for (int k = 0; k < i; ++k)
+  {
+    /* code */
+    Serial.println("["+String(k)+"] "+String(varArr[k]));
+  }
+
   for (int j = 0; j < i; ++j) {
       char *tmp=strtok(varArr[j],":");
       int varName=atoi(tmp);
       tmp=strtok(NULL,":");
       int varVal=atoi(tmp);
+      Serial.println(String(varName)+"="+String(varVal));
+
       switch (varName){
           case LED_MODE:
               Serial.print("LED_MODE");
               ledMode=varVal;
-              change_mode(ledMode);
+              // change_mode(ledMode);
               break;
           case LED_BRIGHTNESS:
               Serial.print("LED_BRIGHTNESS");
@@ -207,12 +197,13 @@ void parseData(char* data){
           case SYS_VOLT:
               Serial.print("SYS_VOLT");
               break;
-          default:
-              break;
+         
       }
+
       if (varName)
         Serial.print(" switched to "+String(varVal)+"\n");
   }
+
   free(varArr);
 }
 
