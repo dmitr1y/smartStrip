@@ -2,7 +2,7 @@
 
 Many operating modes for the LED strip WS2811, WS2812, WS2812b. By default, the control is via Bluetooth.
 
-## howto
+## Howto
 * setup pins
 * setup LED count and LED type
 * do magic
@@ -17,7 +17,7 @@ Where `#0:11` - first variable (in enum you can see, that is LED_MODE), `#1:22` 
 * `:` - equal sign
 * `22` - variable value
 
-## modes
+## Modes
 
 ```
 999: break; // pazooka
