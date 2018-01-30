@@ -1,9 +1,12 @@
-#include <FastLED.h>          // библиотека для работы с лентой
+#include <FastLED.h>
+#include <SoftwareSerial.h>
 
 #define LED_COUNT 120          // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
 
 #define V_METER_PIN 1 //пин вольтметра
+
+SoftwareSerial BlueTooth(10, 11); // TX, RX for BT
 
 int max_bright = 51;         // максимальная яркость (0 - 255)
 int ledMode = 0;
@@ -54,6 +57,7 @@ enum BT_DATA{
 void setup()
 {
   Serial.begin(9600);              // открыть порт для связи
+  BlueTooth.begin(9600);
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
   pinMode(V_METER_PIN, INPUT);     //assigning the input port
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
@@ -63,13 +67,14 @@ void setup()
 
 void loop() {
   char c;
-  if (Serial.available() > 0) {     // если что то прислали
-    String serialReaded=Serial.readStringUntil('@');   // Until CR (Carriage Return)
+  if (BlueTooth.available() > 0) {    
+    String serialReaded=BlueTooth.readStringUntil('@'); //read string from serial
     Serial.println("readed string: "+serialReaded);
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
-    parseData(buf);
+    parseData(buf); //parse data
     free(buf);
+    sendData();
   }
   switch (ledMode) {
     case 999: break;                           // пазуа
@@ -137,13 +142,10 @@ float voltMeter(){
   return Vin;
 }
 
-char* prepareData(int mode, int max_bright, int voltValue, int color){
-  Serial.println("##prepareData:");
-  char data[60];
-  String str="#mode:"+String(mode,DEC)+"#bright:"+String(max_bright,DEC)+"#voltMeter:"+String(voltValue,DEC)+"#color:"+String(color,DEC);
-  str.toCharArray(data,sizeof(data));
-  Serial.println(data);
-  return data;
+void sendData(){
+  String data="";
+  data+="#3:"+String(voltMeter())+"@";
+  BlueTooth.println(data);
 }
 
 void parseData(char* data){
