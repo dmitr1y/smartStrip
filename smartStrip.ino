@@ -6,7 +6,7 @@
 #define V_METER_PIN 1 //пин вольтметра
 
 int max_bright = 51;         // максимальная яркость (0 - 255)
-int ledMode = 3;
+int ledMode = 0;
 /*
   Стартовый режим
   0 - все выключены
@@ -34,11 +34,6 @@ int thisstep = 10;           //-FX LOOPS DELAY VAR
 int thishue = 0;             //-FX LOOPS DELAY VAR
 int thissat = 255;           //-FX LOOPS DELAY VAR
 
-// int thisindex = 0;
-// int thisRED = 0;
-// int thisGRN = 0;
-// int thisBLU = 0;
-
 int idex = 0;                //-LED INDEX (0 to LED_COUNT-1
 int ihue = 0;                //-HUE (0-255)
 int ibright = 0;             //-BRIGHTNESS (0-255)
@@ -50,7 +45,7 @@ int lcount = 0;              //-ANOTHER COUNTING VAR
 // ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
 
 enum BT_DATA{
-    LED_MODE=1,
+    LED_MODE=0,
     LED_BRIGHTNESS,
     LED_COLOR,
     SYS_VOLT
@@ -70,7 +65,7 @@ void loop() {
   char c;
   if (Serial.available() > 0) {     // если что то прислали
     String serialReaded=Serial.readStringUntil('@');   // Until CR (Carriage Return)
-    Serial.println(serialReaded);
+    Serial.println("readed string: "+serialReaded);
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
     parseData(buf);
@@ -152,9 +147,6 @@ char* prepareData(int mode, int max_bright, int voltValue, int color){
 }
 
 void parseData(char* data){
-  Serial.println("##parseData:");
-  Serial.println(data);
-
   char *parsed=strtok(data, "#");
   char **varArr=(char**)malloc(sizeof(char));
 
@@ -167,41 +159,29 @@ void parseData(char* data){
     parsed=strtok(NULL, "#");
   }
 
-  Serial.println("i="+String(i));
-
-  for (int k = 0; k < i; ++k)
-  {
-    /* code */
-    Serial.println("["+String(k)+"] "+String(varArr[k]));
-  }
-
   for (int j = 0; j < i; ++j) {
       char *tmp=strtok(varArr[j],":");
       int varName=atoi(tmp);
       tmp=strtok(NULL,":");
       int varVal=atoi(tmp);
-      Serial.println(String(varName)+"="+String(varVal));
-
+    
       switch (varName){
           case LED_MODE:
               Serial.print("LED_MODE");
               ledMode=varVal;
-              // change_mode(ledMode);
+              change_mode(ledMode);
               break;
           case LED_BRIGHTNESS:
               Serial.print("LED_BRIGHTNESS");
+              max_bright=varVal;
               break;
           case LED_COLOR:
               Serial.print("LED_COLOR");
               break;
-          case SYS_VOLT:
-              Serial.print("SYS_VOLT");
-              break;
-         
+          default:
+              break;         
       }
-
-      if (varName)
-        Serial.print(" switched to "+String(varVal)+"\n");
+      Serial.print(" switched to "+String(varVal)+"\n");
   }
 
   free(varArr);
