@@ -1,5 +1,7 @@
 # smartStrip
 
+Many operating modes for the LED strip WS2811, WS2812, WS2812b. By default, the control is via Bluetooth.
+
 ## howto
 * setup pins
 * setup LED count and LED type
@@ -8,7 +10,8 @@
 ## What Arduino can read from serial?
 Send data in format ```#0:11#1:22#2:33@```
 Where `#0:11` - first variable (in enum you can see, that is LED_MODE), `#1:22` - second, etc. `@` - symbol of the end of string.
-More detail about variable:
+
+## More detail about variable:
 * `#` - start of the variable
 * `1` - variable name (using numbers for enum)
 * `:` - equal sign
