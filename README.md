@@ -66,6 +66,5 @@ Where `#0:11` - first variable (in enum you can see, that is LED_MODE), `#1:22` 
 44: Strobe (0xff, 0xff, 0xff, 10, thisdelay, 1000); break; // stroboscope
 45: BouncingBalls (0xff, 0, 0, 3); break; // jumping balls
 46: BouncingColoredBalls (3, ballColors); break; // jumping colored balls
-888: demo_modeA (); break; // a long demo
 889: demo_modeB (); break; // short demo
 ```

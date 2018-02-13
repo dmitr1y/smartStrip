@@ -67,9 +67,8 @@ void setup()
 
 void loop() {
   char c;
-  if (BlueTooth.available() > 0) {    
+  if (BlueTooth.available() > 4) {    
     String serialReaded=BlueTooth.readStringUntil('@'); //read string from serial
-    Serial.println("readed string: "+serialReaded);
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
     parseData(buf); //parse data
@@ -124,8 +123,8 @@ void loop() {
     case 44: Strobe(0xff, 0xff, 0xff, 10, thisdelay, 1000); break;                  // стробоскоп
     case 45: BouncingBalls(0xff, 0, 0, 3); break;                                   // прыгающие мячики
     case 46: BouncingColoredBalls(3, ballColors); break;                            // прыгающие мячики цветные
-    case 888: demo_modeA(); break;             // длинное демо
     case 889: demo_modeB(); break;             // короткое демо
+    default: break;
   }
 }
 
@@ -136,7 +135,7 @@ float voltMeter(){
   int val = 0;
   val = analogRead(V_METER_PIN);//reads the analog input
   float Vout = (val * 5.00) / 1024.00; // formula for calculating voltage out i.e. V+, here 5.00
-  float Vin = Vout / (R2/(R1+R2))-0.1; // formula for calculating voltage in i.e. GND
+  float Vin = Vout / (R2/(R1+R2)); // formula for calculating voltage in i.e. GND
   if (Vin<0.09)//condition 
     Vin=0.00;//statement to quash undesired reading !
   return Vin;
@@ -146,6 +145,7 @@ void sendData(){
   String data="";
   data+="#3:"+String(voltMeter())+"@";
   BlueTooth.println(data);
+  Serial.println(data);
 }
 
 void parseData(char* data){
@@ -169,6 +169,7 @@ void parseData(char* data){
     
       switch (varName){
           case LED_MODE:
+              if (ledMode == varVal) break;
               Serial.print("LED_MODE");
               ledMode=varVal;
               change_mode(ledMode);
@@ -176,16 +177,19 @@ void parseData(char* data){
           case LED_BRIGHTNESS:
               Serial.print("LED_BRIGHTNESS");
               max_bright=varVal;
+              LEDS.setBrightness(max_bright);
               break;
           case LED_COLOR:
               Serial.print("LED_COLOR");
+              break;
+          case SYS_VOLT:
+              Serial.print("SYS_VOLT");    
               break;
           default:
               break;         
       }
       Serial.print(" switched to "+String(varVal)+"\n");
   }
-
   free(varArr);
 }
 
@@ -209,11 +213,9 @@ void change_mode(int newmode) {
     case 14: thisdelay = 40; break;                     //---MARCH RANDOM COLORS
     case 15: thisdelay = 80; break;                     //---MARCH RWB COLORS
     case 16: thisdelay = 60; thishue = 95; break;       //---RADIATION SYMBOL
-    //---PLACEHOLDER FOR COLOR LOOP VAR DELAY VARS
     case 19: thisdelay = 35; thishue = 180; break;      //---SIN WAVE BRIGHTNESS
     case 20: thisdelay = 100; thishue = 0; break;       //---POP LEFT/RIGHT
     case 21: thisdelay = 100; thishue = 180; break;     //---QUADRATIC BRIGHTNESS CURVE
-    //---PLACEHOLDER FOR FLAME VARS
     case 23: thisdelay = 50; thisstep = 15; break;      //---VERITCAL RAINBOW
     case 24: thisdelay = 50; break;                     //---PACMAN
     case 25: thisdelay = 35; break;                     //---RANDOM COLOR POP
@@ -236,7 +238,6 @@ void change_mode(int newmode) {
     case 42: thisdelay = 50; break;                     // theaterChase
     case 43: thisdelay = 50; break;                     // theaterChaseRainbow
     case 44: thisdelay = 100; break;                    // Strobe
-
     case 101: one_color_all(255, 0, 0); LEDS.show(); break; //---ALL RED
     case 102: one_color_all(0, 255, 0); LEDS.show(); break; //---ALL GREEN
     case 103: one_color_all(0, 0, 255); LEDS.show(); break; //---ALL BLUE
