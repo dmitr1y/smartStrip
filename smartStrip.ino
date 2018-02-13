@@ -196,7 +196,7 @@ void parseData(char* data){
 void change_mode(int newmode) {
   thissat = 255;
   switch (newmode) {
-    case 0: one_color_all(0, 0, 0); LEDS.show(); break; //---ALL OFF
+    case -1: one_color_all(0, 0, 0); LEDS.show(); break; //---ALL OFF
     case 1: one_color_all(255, 255, 255); LEDS.show(); break; //---ALL ON
     case 2: thisdelay = 20; break;                      //---STRIP RAINBOW FADE
     case 3: thisdelay = 20; thisstep = 10; break;       //---RAINBOW LOOP
