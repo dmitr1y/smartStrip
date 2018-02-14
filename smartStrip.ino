@@ -60,10 +60,9 @@ void setup()
 
 void loop() {
   char c;
-  if (BlueTooth.available() > 4) {    
-
-    String serialReaded=BlueTooth.readStringUntil('@'); //read string from serial
-    Serial.println("readed: "+serialReaded);
+  if (Serial.available() > 0) {     // если что то прислали
+    String serialReaded=Serial.readStringUntil('@');   // Until CR (Carriage Return)
+    Serial.println("readed string: "+serialReaded);
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
     BlueTooth.flush();
