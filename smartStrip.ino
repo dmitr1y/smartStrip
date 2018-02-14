@@ -8,15 +8,8 @@
 
 SoftwareSerial BlueTooth(10, 11); // TX, RX for BT
 
-int max_bright = 51;         // максимальная яркость (0 - 255)
-int ledMode = 0;
-/*
-  Стартовый режим
-  0 - все выключены
-  1 - все включены
-  3 - кольцевая радуга
-  888 - демо-режим
-*/
+int max_bright = 150;         // максимальная яркость (0 - 255)
+int ledMode = -1;
 
 // цвета мячиков для режима
 byte ballColors[3][3] = {
@@ -68,9 +61,12 @@ void setup()
 void loop() {
   char c;
   if (BlueTooth.available() > 4) {    
+
     String serialReaded=BlueTooth.readStringUntil('@'); //read string from serial
+    Serial.println("readed: "+serialReaded);
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
+    BlueTooth.flush();
     parseData(buf); //parse data
     free(buf);
     sendData();
@@ -169,7 +165,7 @@ void parseData(char* data){
     
       switch (varName){
           case LED_MODE:
-              if (ledMode == varVal) break;
+              // if (ledMode == varVal) break;
               Serial.print("LED_MODE");
               ledMode=varVal;
               change_mode(ledMode);
@@ -244,6 +240,7 @@ void change_mode(int newmode) {
     case 104: one_color_all(255, 255, 0); LEDS.show(); break; //---ALL COLOR X
     case 105: one_color_all(0, 255, 255); LEDS.show(); break; //---ALL COLOR Y
     case 106: one_color_all(255, 0, 255); LEDS.show(); break; //---ALL COLOR Z
+    default: break;
   }
   bouncedirection = 0;
   one_color_all(0, 0, 0);
