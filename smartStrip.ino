@@ -4,9 +4,9 @@
 #define LED_COUNT 120          // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
 
-#define V_METER_PIN 1 //пин вольтметра
+#define V_METER_PIN 7 //пин вольтметра
 
-SoftwareSerial BlueTooth(10, 11); // TX, RX for BT
+SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
 int max_bright = 150;         // максимальная яркость (0 - 255)
 int ledMode = -1;
@@ -59,14 +59,12 @@ void setup()
 }
 
 void loop() {
-  char c;
-  if (Serial.available() > 0) {     // если что то прислали
-    String serialReaded=Serial.readStringUntil('@');   // Until CR (Carriage Return)
-    Serial.println("readed string: "+serialReaded);
+  if (BlueTooth.available() > 4) {     // если что то прислали
+    String serialReaded=BlueTooth.readStringUntil('@');   // Until CR (Carriage Return)
     char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
     serialReaded.toCharArray(buf,serialReaded.length()+1);
-    BlueTooth.flush();
     parseData(buf); //parse data
+    BlueTooth.flush();
     free(buf);
     sendData();
   }
@@ -101,8 +99,6 @@ void loop() {
     case 28: kitt(); break;                    // случайные вспышки красного в вертикаьной плоскости
     case 29: matrix(); break;                  // зелёненькие бегают по кругу случайно
     case 30: new_rainbow_loop(); break;        // крутая плавная вращающаяся радуга
-    case 31: strip_march_ccw(); break;         // чёт сломалось
-    case 32: strip_march_cw(); break;          // чёт сломалось
     case 33: colorWipe(0x00, 0xff, 0x00, thisdelay);
       colorWipe(0x00, 0x00, 0x00, thisdelay); break;                                // плавное заполнение цветом
     case 34: CylonBounce(0xff, 0, 0, 4, 10, thisdelay); break;                      // бегающие светодиоды
@@ -140,13 +136,11 @@ void sendData(){
   String data="";
   data+="#3:"+String(voltMeter())+"@";
   BlueTooth.println(data);
-  Serial.println(data);
 }
 
 void parseData(char* data){
   char *parsed=strtok(data, "#");
   char **varArr=(char**)malloc(sizeof(char));
-
   int i=0;
   while (parsed!=NULL){
     varArr=(char**)realloc(varArr,sizeof(char*)*(i+1));
@@ -155,13 +149,11 @@ void parseData(char* data){
     i++;
     parsed=strtok(NULL, "#");
   }
-
   for (int j = 0; j < i; ++j) {
-      char *tmp=strtok(varArr[j],":");
-      int varName=atoi(tmp);
-      tmp=strtok(NULL,":");
-      int varVal=atoi(tmp);
-    
+      char *tmp = strtok(varArr[j],":");
+      int varName = atoi(tmp);
+      tmp = strtok(NULL,":");
+      int varVal = atoi(tmp);    
       switch (varName){
           case LED_MODE:
               // if (ledMode == varVal) break;
@@ -170,20 +162,16 @@ void parseData(char* data){
               change_mode(ledMode);
               break;
           case LED_BRIGHTNESS:
-              Serial.print("LED_BRIGHTNESS");
               max_bright=varVal;
               LEDS.setBrightness(max_bright);
               break;
           case LED_COLOR:
-              Serial.print("LED_COLOR");
               break;
-          case SYS_VOLT:
-              Serial.print("SYS_VOLT");    
+          case SYS_VOLT:  
               break;
           default:
               break;         
       }
-      Serial.print(" switched to "+String(varVal)+"\n");
   }
   free(varArr);
 }
