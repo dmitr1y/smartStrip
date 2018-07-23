@@ -1,10 +1,10 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 120          // число светодиодов в кольце/ленте
+#define LED_COUNT 105        // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
 
-#define V_METER_PIN 7 //пин вольтметра
+// #define V_METER_PIN 7 //пин вольтметра
 
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
@@ -52,7 +52,7 @@ void setup()
   Serial.begin(9600);              // открыть порт для связи
   BlueTooth.begin(9600);
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
-  pinMode(V_METER_PIN, INPUT);     //assigning the input port
+  pinMode(7, INPUT);     //assigning the input port
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
   one_color_all(0, 0, 0);          // погасить все светодиоды
   LEDS.show();                     // отослать команду
@@ -87,12 +87,12 @@ void loop() {
     case 16: radiation(); break;               // пульсирует значок радиации
     case 17: color_loop_vardelay(); break;     // красный светодиод бегает по кругу
     case 18: white_temps(); break;             // бело синий градиент (?)
-    case 19: sin_bright_wave(); break;         // тоже хрень какая то
+    // case 19: sin_bright_wave(); break;         // тоже хрень какая то
     case 20: pop_horizontal(); break;          // красные вспышки спускаются вниз
     case 21: quad_bright_curve(); break;       // полумесяц
     case 22: flame(); break;                   // эффект пламени
     case 23: rainbow_vertical(); break;        // радуга в вертикаьной плоскости (кольцо)
-    case 24: pacman(); break;                  // пакман
+    // case 24: pacman(); break;                  // пакман
     case 25: random_color_pop(); break;        // безумие случайных вспышек
     case 26: ems_lightsSTROBE(); break;        // полицейская мигалка
     case 27: rgb_propeller(); break;           // RGB пропеллер
@@ -124,7 +124,7 @@ float voltMeter(){
   float R1 = 100000.00; // resistance of R1 (100K) 
   float R2 = 10000.00; // resistance of R2 (10K) 
   int val = 0;
-  val = analogRead(V_METER_PIN);//reads the analog input
+  val = analogRead(7);//reads the analog input
   float Vout = (val * 5.00) / 1024.00; // formula for calculating voltage out i.e. V+, here 5.00
   float Vin = Vout / (R2/(R1+R2)); // formula for calculating voltage in i.e. GND
   if (Vin<0.09)//condition 
@@ -200,7 +200,7 @@ void change_mode(int newmode) {
     case 20: thisdelay = 100; thishue = 0; break;       //---POP LEFT/RIGHT
     case 21: thisdelay = 100; thishue = 180; break;     //---QUADRATIC BRIGHTNESS CURVE
     case 23: thisdelay = 50; thisstep = 15; break;      //---VERITCAL RAINBOW
-    case 24: thisdelay = 50; break;                     //---PACMAN
+    // case 24: thisdelay = 50; break;                     //---PACMAN
     case 25: thisdelay = 35; break;                     //---RANDOM COLOR POP
     case 26: thisdelay = 25; thishue = 0; break;        //---EMERGECNY STROBE
     case 27: thisdelay = 25; thishue = 0; break;        //---RGB PROPELLER

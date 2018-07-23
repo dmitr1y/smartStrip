@@ -425,19 +425,6 @@ void white_temps() {                            //-m18-SHOW A SAMPLE OF BLACK BO
   delay(100);
 }
 
-void sin_bright_wave() {        //-m19-BRIGHTNESS SINE WAVE
-  for (int i = 0; i < LED_COUNT; i++ ) {
-    tcount = tcount + .1;
-    if (tcount > 3.14) {
-      tcount = 0.0;
-    }
-    ibright = int(sin(tcount) * 255);
-    leds[i] = CHSV(thishue, thissat, ibright);
-    LEDS.show();
-    delay(thisdelay);
-  }
-}
-
 void pop_horizontal() {        //-m20-POP FROM LEFT TO RIGHT UP THE RING
   int ix;
   if (bouncedirection == 0) {
@@ -514,45 +501,6 @@ void rainbow_vertical() {                        //-m23-RAINBOW 'UP' THE LOOP
   int idexB = horizontal_index(idexA);
   leds[idexA] = CHSV(ihue, thissat, 255);
   leds[idexB] = CHSV(ihue, thissat, 255);
-  LEDS.show();
-  delay(thisdelay);
-}
-
-void pacman() {                                  //-m24-REALLY TERRIBLE PACMAN CHOMPING EFFECT
-  int s = int(LED_COUNT / 4);
-  lcount++;
-  if (lcount > 5) {
-    lcount = 0;
-  }
-  if (lcount == 0) {
-    for (int i = 0 ; i < LED_COUNT; i++ ) {
-      set_color_led(i, 255, 255, 0);
-    }
-  }
-  if (lcount == 1 || lcount == 5) {
-    for (int i = 0 ; i < LED_COUNT; i++ ) {
-      set_color_led(i, 255, 255, 0);
-    }
-    leds[s].r = 0; leds[s].g = 0; leds[s].b = 0;
-  }
-  if (lcount == 2 || lcount == 4) {
-    for (int i = 0 ; i < LED_COUNT; i++ ) {
-      set_color_led(i, 255, 255, 0);
-    }
-    leds[s - 1].r = 0; leds[s - 1].g = 0; leds[s - 1].b = 0;
-    leds[s].r = 0; leds[s].g = 0; leds[s].b = 0;
-    leds[s + 1].r = 0; leds[s + 1].g = 0; leds[s + 1].b = 0;
-  }
-  if (lcount == 3) {
-    for (int i = 0 ; i < LED_COUNT; i++ ) {
-      set_color_led(i, 255, 255, 0);
-    }
-    leds[s - 2].r = 0; leds[s - 2].g = 0; leds[s - 2].b = 0;
-    leds[s - 1].r = 0; leds[s - 1].g = 0; leds[s - 1].b = 0;
-    leds[s].r = 0; leds[s].g = 0; leds[s].b = 0;
-    leds[s + 1].r = 0; leds[s + 1].g = 0; leds[s + 1].b = 0;
-    leds[s + 2].r = 0; leds[s + 2].g = 0; leds[s + 2].b = 0;
-  }
   LEDS.show();
   delay(thisdelay);
 }
@@ -671,116 +619,6 @@ void new_rainbow_loop() {                      //-m88-RAINBOW FADE FROM FAST_SPI
   fill_rainbow( leds, LED_COUNT, ihue );
   LEDS.show();
   delay(thisdelay);
-}
-
-void demo_modeA() {
-  int r = 10;
-  thisdelay = 20; thisstep = 10; thishue = 0; thissat = 255;
-  one_color_all(255, 255, 255); LEDS.show(); delay(1200);
-  for (int i = 0; i < r * 25; i++) {
-    rainbow_fade();
-  }
-  for (int i = 0; i < r * 20; i++) {
-    rainbow_loop();
-  }
-  for (int i = 0; i < r * 20; i++) {
-    random_burst();
-  }
-  for (int i = 0; i < r * 12; i++) {
-    color_bounce();
-  }
-  thisdelay = 40;
-  for (int i = 0; i < r * 12; i++) {
-    color_bounceFADE();
-  }
-  for (int i = 0; i < r * 6; i++) {
-    ems_lightsONE();
-  }
-  for (int i = 0; i < r * 5; i++) {
-    ems_lightsALL();
-  }
-  thishue = 160; thissat = 50;
-  for (int i = 0; i < r * 40; i++) {
-    flicker();
-  }
-  one_color_all(0, 0, 0); LEDS.show();
-  thisdelay = 15; thishue = 0; thissat = 255;
-  for (int i = 0; i < r * 50; i++) {
-    pulse_one_color_all();
-  }
-  for (int i = 0; i < r * 40; i++) {
-    pulse_one_color_all_rev();
-  }
-  thisdelay = 60; thishue = 180;
-  for (int i = 0; i < r * 5; i++) {
-    fade_vertical();
-  }
-  random_red();
-  thisdelay = 100;
-  for (int i = 0; i < r * 5; i++) {
-    rule30();
-  }
-  thisdelay = 40;
-  for (int i = 0; i < r * 8; i++) {
-    random_march();
-  }
-  thisdelay = 80;
-  for (int i = 0; i < r * 5; i++) {
-    rwb_march();
-  }
-  one_color_all(0, 0, 0); ; LEDS.show();
-  thisdelay = 60; thishue = 95;
-  for (int i = 0; i < r * 15; i++) {
-    radiation();
-  }
-  for (int i = 0; i < r * 15; i++) {
-    color_loop_vardelay();
-  }
-  for (int i = 0; i < r * 5; i++) {
-    white_temps();
-  }
-  thisdelay = 35; thishue = 180;
-  for (int i = 0; i < r; i++) {
-    sin_bright_wave();
-  }
-  thisdelay = 100; thishue = 0;
-  for (int i = 0; i < r * 5; i++) {
-    pop_horizontal();
-  }
-  thisdelay = 100; thishue = 180;
-  for (int i = 0; i < r * 4; i++) {
-    quad_bright_curve();
-  }
-  one_color_all(0, 0, 0); LEDS.show();
-  for (int i = 0; i < r * 3; i++) {
-    flame();
-  }
-  thisdelay = 50;
-  for (int i = 0; i < r * 10; i++) {
-    pacman();
-  }
-  thisdelay = 50; thisstep = 15;
-  for (int i = 0; i < r * 12; i++) {
-    rainbow_vertical();
-  }
-  thisdelay = 100;
-  for (int i = 0; i < r * 3; i++) {
-    strip_march_ccw();
-  }
-  for (int i = 0; i < r * 3; i++) {
-    strip_march_cw();
-  }
-  demo_modeB();
-  thisdelay = 5;
-  for (int i = 0; i < r * 120; i++) {
-    new_rainbow_loop();
-  }
-  one_color_all(255, 0, 0); LEDS.show(); delay(1200);
-  one_color_all(0, 255, 0); LEDS.show(); delay(1200);
-  one_color_all(0, 0, 255); LEDS.show(); delay(1200);
-  one_color_all(255, 255, 0); LEDS.show(); delay(1200);
-  one_color_all(0, 255, 255); LEDS.show(); delay(1200);
-  one_color_all(255, 0, 255); LEDS.show(); delay(1200);
 }
 
 void demo_modeB() {
