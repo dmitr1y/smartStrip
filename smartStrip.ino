@@ -1,7 +1,8 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 105        // число светодиодов в кольце/ленте
+#define LED_COUNT 121        // число светодиодов в кольце/ленте
+// #define LED_COUNT 105        // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
 
 // #define V_METER_PIN 7 //пин вольтметра
@@ -51,6 +52,7 @@ void setup()
 {
   Serial.begin(9600);              // открыть порт для связи
   BlueTooth.begin(9600);
+  attachInterrupt(0, recieveData, CHANGE);
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
   pinMode(7, INPUT);     //assigning the input port
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
@@ -59,15 +61,10 @@ void setup()
 }
 
 void loop() {
-  if (BlueTooth.available() > 4) {     // если что то прислали
-    String serialReaded=BlueTooth.readStringUntil('@');   // Until CR (Carriage Return)
-    char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
-    serialReaded.toCharArray(buf,serialReaded.length()+1);
-    parseData(buf); //parse data
-    BlueTooth.flush();
-    free(buf);
-    sendData();
-  }
+  if (BlueTooth.available() > 4)     // если что то прислали
+    recieveData();
+  Serial.print("ledMode: ");
+  Serial.println(ledMode);
   switch (ledMode) {
     case 999: break;                           // пазуа
     case  2: rainbow_fade(); break;            // плавная смена цветов всей ленты
@@ -117,6 +114,18 @@ void loop() {
     case 889: demo_modeB(); break;             // короткое демо
     default: break;
   }
+}
+
+
+void recieveData(){
+  Serial.println("recieveData");
+  String serialReaded=BlueTooth.readStringUntil('@');   // Until CR (Carriage Return)
+  char *buf=(char*)malloc(sizeof(char)*serialReaded.length());
+  serialReaded.toCharArray(buf,serialReaded.length()+1);
+  parseData(buf); //parse data
+  BlueTooth.flush();
+  free(buf);
+  sendData();
 }
 
 float voltMeter(){
@@ -178,6 +187,8 @@ void parseData(char* data){
 
 void change_mode(int newmode) {
   thissat = 255;
+  Serial.print("change_mode: ");
+  Serial.println(newmode);
   switch (newmode) {
     case -1: one_color_all(0, 0, 0); LEDS.show(); break; //---ALL OFF
     case 1: one_color_all(255, 255, 255); LEDS.show(); break; //---ALL ON
@@ -230,6 +241,6 @@ void change_mode(int newmode) {
     default: break;
   }
   bouncedirection = 0;
-  one_color_all(0, 0, 0);
+  // one_color_all(0, 0, 0);
   ledMode = newmode;
 }
