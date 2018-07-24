@@ -1,11 +1,10 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 121        // число светодиодов в кольце/ленте
-// #define LED_COUNT 105        // число светодиодов в кольце/ленте
+// #define LED_COUNT 10        // число светодиодов в кольце/ленте
+// #define LED_COUNT 121        // число светодиодов в кольце/ленте
+#define LED_COUNT 105        // число светодиодов в кольце/ленте
 #define LED_DT 8             // пин, куда подключен DIN ленты
-
-// #define V_METER_PIN 7 //пин вольтметра
 
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
@@ -54,7 +53,7 @@ void setup()
   BlueTooth.begin(9600);
   attachInterrupt(0, recieveData, CHANGE);
   LEDS.setBrightness(max_bright);  // ограничить максимальную яркость
-  pinMode(7, INPUT);     //assigning the input port
+  pinMode(7, INPUT);     //assigning the input port to Vmeter
   LEDS.addLeds<WS2812B, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
   one_color_all(0, 0, 0);          // погасить все светодиоды
   LEDS.show();                     // отослать команду
@@ -66,7 +65,7 @@ void loop() {
   Serial.print("ledMode: ");
   Serial.println(ledMode);
   switch (ledMode) {
-    case 999: break;                           // пазуа
+    case 999: break;                           // пауза
     case  2: rainbow_fade(); break;            // плавная смена цветов всей ленты
     case  3: rainbow_loop(); break;            // крутящаяся радуга
     case  4: random_burst(); break;            // случайная смена цветов
@@ -207,7 +206,7 @@ void change_mode(int newmode) {
     case 14: thisdelay = 40; break;                     //---MARCH RANDOM COLORS
     case 15: thisdelay = 80; break;                     //---MARCH RWB COLORS
     case 16: thisdelay = 60; thishue = 95; break;       //---RADIATION SYMBOL
-    case 19: thisdelay = 35; thishue = 180; break;      //---SIN WAVE BRIGHTNESS
+    // case 19: thisdelay = 35; thishue = 180; break;      //---SIN WAVE BRIGHTNESS
     case 20: thisdelay = 100; thishue = 0; break;       //---POP LEFT/RIGHT
     case 21: thisdelay = 100; thishue = 180; break;     //---QUADRATIC BRIGHTNESS CURVE
     case 23: thisdelay = 50; thisstep = 15; break;      //---VERITCAL RAINBOW
@@ -232,12 +231,12 @@ void change_mode(int newmode) {
     case 42: thisdelay = 50; break;                     // theaterChase
     case 43: thisdelay = 50; break;                     // theaterChaseRainbow
     case 44: thisdelay = 100; break;                    // Strobe
-    case 101: one_color_all(255, 0, 0); LEDS.show(); break; //---ALL RED
-    case 102: one_color_all(0, 255, 0); LEDS.show(); break; //---ALL GREEN
-    case 103: one_color_all(0, 0, 255); LEDS.show(); break; //---ALL BLUE
-    case 104: one_color_all(255, 255, 0); LEDS.show(); break; //---ALL COLOR X
-    case 105: one_color_all(0, 255, 255); LEDS.show(); break; //---ALL COLOR Y
-    case 106: one_color_all(255, 0, 255); LEDS.show(); break; //---ALL COLOR Z
+    // case 101: one_color_all(255, 0, 0); LEDS.show(); break; //---ALL RED
+    // case 102: one_color_all(0, 255, 0); LEDS.show(); break; //---ALL GREEN
+    // case 103: one_color_all(0, 0, 255); LEDS.show(); break; //---ALL BLUE
+    // case 104: one_color_all(255, 255, 0); LEDS.show(); break; //---ALL COLOR X
+    // case 105: one_color_all(0, 255, 255); LEDS.show(); break; //---ALL COLOR Y
+    // case 106: one_color_all(255, 0, 255); LEDS.show(); break; //---ALL COLOR Z
     default: break;
   }
   bouncedirection = 0;

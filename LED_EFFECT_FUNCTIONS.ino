@@ -886,17 +886,13 @@ void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
   {
     Position++; // = 0; //Position + Rate;
     for (int i = 0; i < LED_COUNT; i++) {
-      // sine wave, 3 offset waves make a rainbow!
-      //float level = sin(i+Position) * 127 + 128;
-      //setPixel(i,level,0,0);
-      //float level = sin(i+Position) * 127 + 128;
-      setPixel(i, ((sin(i + Position) * 127 + 128) / 255)*red,
+       setPixel(i, ((sin(i + Position) * 127 + 128) / 255)*red,
                ((sin(i + Position) * 127 + 128) / 255)*green,
                ((sin(i + Position) * 127 + 128) / 255)*blue);
     }
 
     FastLED.show();
-    delay(WaveDelay);
+    // delay(WaveDelay);
   }
 }
 
@@ -992,8 +988,9 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
     TimeSinceLastBounce[i] = 0;
     Dampening[i] = 0.90 - float(i) / pow(BallCount, 2);
   }
-
-  while (true) {
+// todo: delete inf loop
+  int counter=0, count=10;
+  while (counter<count) {
     for (int i = 0 ; i < BallCount ; i++) {
       TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
       Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i] / 1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i] / 1000;
@@ -1008,6 +1005,7 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
         }
       }
       Position[i] = round( Height[i] * (LED_COUNT - 1) / StartHeight);
+      delay(1);
     }
 
     for (int i = 0 ; i < BallCount ; i++) {
@@ -1015,6 +1013,7 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
     }
     FastLED.show();
     setAll(0, 0, 0);
+    counter++;
   }
 }
 
@@ -1039,8 +1038,9 @@ void BouncingColoredBalls(int BallCount, byte colors[][3]) {
     TimeSinceLastBounce[i] = 0;
     Dampening[i] = 0.90 - float(i) / pow(BallCount, 2);
   }
-
-  while (true) {
+// todo: delete inf loop
+  int counter=0, count=10;
+  while (counter<count) {
     for (int i = 0 ; i < BallCount ; i++) {
       TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
       Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i] / 1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i] / 1000;
@@ -1062,5 +1062,6 @@ void BouncingColoredBalls(int BallCount, byte colors[][3]) {
     }
     FastLED.show();
     setAll(0, 0, 0);
+    counter++;
   }
 }
