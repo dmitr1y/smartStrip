@@ -23,20 +23,6 @@ void rainbow_fade() {                         //-m2-FADE ALL LEDS THROUGH HSV RA
   delay(thisdelay);
 }
 
-// void rainbow_loop() {                        //-m3-LOOP HSV RAINBOW
-//   idex++;
-//   ihue = ihue + thisstep;
-//   if (idex >= LED_COUNT) {
-//     idex = 0;
-//   }
-//   if (ihue > 255) {
-//     ihue = 0;
-//   }
-//   leds[idex] = CHSV(ihue, thissat, 255);
-//   LEDS.show();
-//   delay(thisdelay);
-// }
-
 void random_burst() {                         //-m4-RANDOM INDEX/COLOR
   idex = random(0, LED_COUNT);
   ihue = random(0, 255);
@@ -158,19 +144,6 @@ void ems_lightsALL() {                  //-m8-EMERGENCY LIGHTS (TWO COLOR SOLID)
   delay(thisdelay);
 }
 
-// void flicker() {                          //-m9-FLICKER EFFECT
-//   int random_bright = random(0, 255);
-//   int random_delay = random(10, 100);
-//   int random_bool = random(0, random_bright);
-//   if (random_bool < 10) {
-//     for (int i = 0 ; i < LED_COUNT; i++ ) {
-//       leds[i] = CHSV(thishue, thissat, random_bright);
-//     }
-//     LEDS.show();
-//     delay(random_delay);
-//   }
-// }
-
 void pulse_one_color_all() {              //-m10-PULSE BRIGHTNESS ON ALL LEDS TO ONE COLOR
   if (bouncedirection == 0) {
     ibright++;
@@ -211,23 +184,6 @@ void pulse_one_color_all_rev() {           //-m11-PULSE SATURATION ON ALL LEDS T
   delay(thisdelay);
 }
 
-// void fade_vertical() {                    //-m12-FADE 'UP' THE LOOP
-//   idex++;
-//   if (idex > TOP_INDEX) {
-//     idex = 0;
-//   }
-//   int idexA = idex;
-//   int idexB = horizontal_index(idexA);
-//   ibright = ibright + 10;
-//   if (ibright > 255) {
-//     ibright = 0;
-//   }
-//   leds[idexA] = CHSV(thishue, thissat, ibright);
-//   leds[idexB] = CHSV(thishue, thissat, ibright);
-//   LEDS.show();
-//   delay(thisdelay);
-// }
-
 void random_red() {                       //QUICK 'N DIRTY RANDOMIZE TO GET CELL AUTOMATA STARTED
   int temprand;
   for (int i = 0; i < LED_COUNT; i++ ) {
@@ -242,95 +198,6 @@ void random_red() {                       //QUICK 'N DIRTY RANDOMIZE TO GET CELL
   }
   LEDS.show();
 }
-
-// void rule30() {                          //-m13-1D CELLULAR AUTOMATA - RULE 30 (RED FOR NOW)
-//   if (bouncedirection == 0) {
-//     random_red();
-//     bouncedirection = 1;
-//   }
-//   copy_led_array();
-//   int iCW;
-//   int iCCW;
-//   int y = 100;
-//   for (int i = 0; i < LED_COUNT; i++ ) {
-//     iCW = adjacent_cw(i);
-//     iCCW = adjacent_ccw(i);
-//     if (ledsX[iCCW][0] > y && ledsX[i][0] > y && ledsX[iCW][0] > y) {
-//       leds[i].r = 0;
-//     }
-//     if (ledsX[iCCW][0] > y && ledsX[i][0] > y && ledsX[iCW][0] <= y) {
-//       leds[i].r = 0;
-//     }
-//     if (ledsX[iCCW][0] > y && ledsX[i][0] <= y && ledsX[iCW][0] > y) {
-//       leds[i].r = 0;
-//     }
-//     if (ledsX[iCCW][0] > y && ledsX[i][0] <= y && ledsX[iCW][0] <= y) {
-//       leds[i].r = 255;
-//     }
-//     if (ledsX[iCCW][0] <= y && ledsX[i][0] > y && ledsX[iCW][0] > y) {
-//       leds[i].r = 255;
-//     }
-//     if (ledsX[iCCW][0] <= y && ledsX[i][0] > y && ledsX[iCW][0] <= y) {
-//       leds[i].r = 255;
-//     }
-//     if (ledsX[iCCW][0] <= y && ledsX[i][0] <= y && ledsX[iCW][0] > y) {
-//       leds[i].r = 255;
-//     }
-//     if (ledsX[iCCW][0] <= y && ledsX[i][0] <= y && ledsX[iCW][0] <= y) {
-//       leds[i].r = 0;
-//     }
-//   }
-//   LEDS.show();
-//   delay(thisdelay);
-// }
-
-// void random_march() {                   //-m14-RANDOM MARCH CCW
-//   copy_led_array();
-//   int iCCW;
-//   leds[0] = CHSV(random(0, 255), 255, 255);
-//   for (int idex = 1; idex < LED_COUNT ; idex++ ) {
-//     iCCW = adjacent_ccw(idex);
-//     leds[idex].r = ledsX[iCCW][0];
-//     leds[idex].g = ledsX[iCCW][1];
-//     leds[idex].b = ledsX[iCCW][2];
-//   }
-//   LEDS.show();
-//   delay(thisdelay);
-// }
-
-// void rwb_march() {                    //-m15-R,W,B MARCH CCW
-//   copy_led_array();
-//   int iCCW;
-//   idex++;
-//   if (idex > 2) {
-//     idex = 0;
-//   }
-//   switch (idex) {
-//     case 0:
-//       leds[0].r = 255;
-//       leds[0].g = 0;
-//       leds[0].b = 0;
-//       break;
-//     case 1:
-//       leds[0].r = 255;
-//       leds[0].g = 255;
-//       leds[0].b = 255;
-//       break;
-//     case 2:
-//       leds[0].r = 0;
-//       leds[0].g = 0;
-//       leds[0].b = 255;
-//       break;
-//   }
-//   for (int i = 1; i < LED_COUNT; i++ ) {
-//     iCCW = adjacent_ccw(i);
-//     leds[i].r = ledsX[iCCW][0];
-//     leds[i].g = ledsX[iCCW][1];
-//     leds[i].b = ledsX[iCCW][2];
-//   }
-//   LEDS.show();
-//   delay(thisdelay);
-// }
 
 void radiation() {                   //-m16-SORT OF RADIATION SYMBOLISH-
   int N3  = int(LED_COUNT / 3);
@@ -352,25 +219,6 @@ void radiation() {                   //-m16-SORT OF RADIATION SYMBOLISH-
   LEDS.show();
   delay(thisdelay);
 }
-
-// void color_loop_vardelay() {                    //-m17-COLOR LOOP (SINGLE LED) w/ VARIABLE DELAY
-//   idex++;
-//   if (idex > LED_COUNT) {
-//     idex = 0;
-//   }
-//   int di = abs(TOP_INDEX - idex);
-//   int t = constrain((10 / di) * 10, 10, 500);
-//   for (int i = 0; i < LED_COUNT; i++ ) {
-//     if (i == idex) {
-//       leds[i] = CHSV(0, thissat, 255);
-//     }
-//     else {
-//       leds[i].r = 0; leds[i].g = 0; leds[i].b = 0;
-//     }
-//   }
-//   LEDS.show();
-//   delay(t);
-// }
 
 void white_temps() {                            //-m18-SHOW A SAMPLE OF BLACK BODY RADIATION COLOR TEMPERATURES
   int N9 = int(LED_COUNT / 9);
@@ -488,23 +336,6 @@ void flame() {                                    //-m22-FLAMEISH EFFECT
   }
 }
 
-// void rainbow_vertical() {                        //-m23-RAINBOW 'UP' THE LOOP
-//   idex++;
-//   if (idex > TOP_INDEX) {
-//     idex = 0;
-//   }
-//   ihue = ihue + thisstep;
-//   if (ihue > 255) {
-//     ihue = 0;
-//   }
-//   int idexA = idex;
-//   int idexB = horizontal_index(idexA);
-//   leds[idexA] = CHSV(ihue, thissat, 255);
-//   leds[idexB] = CHSV(ihue, thissat, 255);
-//   LEDS.show();
-//   delay(thisdelay);
-// }
-
 void random_color_pop() {                         //-m25-RANDOM COLOR POP
   idex = random(0, LED_COUNT);
   ihue = random(0, 255);
@@ -553,22 +384,6 @@ void rgb_propeller() {                           //-m27-RGB PROPELLER
   LEDS.show();
   delay(thisdelay);
 }
-
-// void kitt() {                                     //-m28-KNIGHT INDUSTIES 2000
-//   int rand = random(0, TOP_INDEX);
-//   for (int i = 0; i < rand; i++ ) {
-//     leds[TOP_INDEX + i] = CHSV(thishue, thissat, 255);
-//     leds[TOP_INDEX - i] = CHSV(thishue, thissat, 255);
-//     LEDS.show();
-//     delay(thisdelay / rand);
-//   }
-//   for (int i = rand; i > 0; i-- ) {
-//     leds[TOP_INDEX + i] = CHSV(thishue, thissat, 0);
-//     leds[TOP_INDEX - i] = CHSV(thishue, thissat, 0);
-//     LEDS.show();
-//     delay(thisdelay / rand);
-//   }
-// }
 
 void matrix() {                                   //-m29-ONE LINE MATRIX
   int rand = random(0, 100);
@@ -737,18 +552,6 @@ void setPixelHeatColor (int Pixel, byte temperature) {
   }
 }
 
-// //-------------------------------newKITT---------------------------------------
-// void NewKITT(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, int ReturnDelay) {
-//   RightToLeft(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   LeftToRight(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   OutsideToCenter(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   CenterToOutside(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   LeftToRight(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   RightToLeft(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   OutsideToCenter(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-//   CenterToOutside(red, green, blue, EyeSize, SpeedDelay, ReturnDelay);
-// }
-
 void CenterToOutside(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, int ReturnDelay) {
   for (int i = ((LED_COUNT - EyeSize) / 2); i >= 0; i--) {
     setAll(0, 0, 0);
@@ -891,15 +694,6 @@ void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
     // delay(WaveDelay);
   }
 }
-
-// //-------------------------------Sparkle---------------------------------------
-// void Sparkle(byte red, byte green, byte blue, int SpeedDelay) {
-//   int Pixel = random(LED_COUNT);
-//   setPixel(Pixel, red, green, blue);
-//   FastLED.show();
-//   delay(SpeedDelay);
-//   setPixel(Pixel, 0, 0, 0);
-// }
 
 //-------------------------------SnowSparkle---------------------------------------
 void SnowSparkle(byte red, byte green, byte blue, int SparkleDelay, int SpeedDelay) {
