@@ -9,7 +9,7 @@
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
 volatile unsigned short int max_bright = 150; // максимальная яркость (0 - 255)
-volatile short int ledMode = -1;
+int ledMode = -1;
 
 // цвета мячиков для режима
 byte ballColors[3][3] = {{0xff, 0, 0}, {0xff, 0xff, 0xff}, {0, 0, 0xff}};
@@ -26,7 +26,6 @@ volatile unsigned short int
 unsigned short int thisdelay = 20; //-FX LOOPS DELAY VAR
 unsigned short int thisstep = 10;  //-FX LOOPS DELAY VAR
 unsigned short int thishue = 0;    //-FX LOOPS DELAY VAR
-// int 255 = 255;  //-FX LOOPS DELAY VAR255
 
 unsigned short int idex = 0;            //-LED INDEX (0 to LED_COUNT-1
 unsigned short int ihue = 0;            //-HUE (0-255)
@@ -41,31 +40,42 @@ unsigned short int lcount = 0;          //-ANOTHER COUNTING VAR
 enum BT_DATA { LED_MODE = 0, LED_BRIGHTNESS, LED_COLOR, SYS_VOLT };
 
 void setup() {
+  // config of Serial
   Serial.begin(9600); // открыть порт для связи
   BlueTooth.begin(9600);
-  // attachInterrupt(0, recieveData, CHANGE);
+
+  // config of led strip
   LEDS.setBrightness(max_bright); // ограничить максимальную яркость
   LEDS.addLeds<WS2812B, LED_DT, GRB>(
       leds, LED_COUNT); // настрйоки для нашей ленты (ленты на WS2811, WS2812,
                         // WS2812B)
   one_color_all(0, 0, 0); // погасить все светодиоды
   // pinMode(7, INPUT);     //assigning the input port to Vmeter
-  pinMode(6, OUTPUT); // reset for RS-trigger
-  digitalWrite(6, LOW);
-  pinMode(2, INPUT); // interrupt pin
-  // attachInterrupt(2,recieveData,HIGH);
+
+  // config of interrupts
+  // attachInterrupt(0, recieveData, HIGH);
+  // pinMode(6, OUTPUT); // reset for RS-trigger
+  // digitalWrite(6, LOW);
+  // pinMode(2, INPUT); // interrupt pins
+
   LEDS.show(); // отослать команду
 }
 
 void loop() {
-  digitalWrite(6, LOW);
-  if (BlueTooth.available() > 4) // если что то прислали
+	Serial.println("------> loop");
+  // digitalWrite(6, LOW);
+  while (BlueTooth.available()) // если что то прислали
+  {
+    Serial.println("Data recieved!");
     recieveData();
-  ledMods();
+    // delay(1);
+  }
+  while (BlueTooth.available()<4)
+  	ledMods();
 }
 
 void ledMods() {
-  Serial.print("ledMode: ");
+  Serial.print("cur ledMode: ");
   Serial.println(ledMode);
   switch (ledMode) {
   case 999:
@@ -251,9 +261,11 @@ void sendData() {
 }
 
 void parseData(char *data) {
+  Serial.print("Parsing data: ");
+  Serial.println(data);
   char *parsed = strtok(data, "#");
   char **varArr = (char **)malloc(sizeof(char));
-  int arraySize=0;
+  short int arraySize=0;
   while (parsed!=NULL){
     varArr=(char**)realloc(varArr,sizeof(char*)*(arraySize+1));
     varArr[arraySize]=(char*)malloc(sizeof(char*));
@@ -261,15 +273,16 @@ void parseData(char *data) {
     arraySize++;
     parsed=strtok(NULL, "#");
   }
-  for (int j = 0; j < arraySize; ++j) {
+  for (short int j = 0; j < arraySize; ++j) {
       char *tmp = strtok(varArr[j],":");
-      int varName = atoi(tmp);
+      short int varName = atoi(tmp);
       tmp = strtok(NULL,":");
-      int varVal = atoi(tmp);    
+      short int varVal = atoi(tmp);    
       switch (varName){
           case LED_MODE:
-              Serial.print("LED_MODE");
+              Serial.print("LED_MODE = ");
               ledMode=varVal;
+              Serial.println(ledMode);
               break;
           case LED_BRIGHTNESS:
               max_bright=varVal;
@@ -285,8 +298,11 @@ void parseData(char *data) {
   }
   if (varArr!=NULL)
   {
-  	for (int i = 0; i < arraySize; ++i)
+  	Serial.println("varArr isn't NULL!");
+  	for (short int i = 0; i < arraySize; ++i)
   		free(varArr[i]);
+  	Serial.println("       deleting header...");
     free(varArr);
+    Serial.println("       	... OK.");
   }
 }
