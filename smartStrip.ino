@@ -1,9 +1,9 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-// #define LED_COUNT 10        // число светодиодов в кольце/ленте
+#define LED_COUNT 5        // число светодиодов в кольце/ленте
 // #define LED_COUNT 121        // число светодиодов в кольце/ленте
-#define LED_COUNT 105 // число светодиодов в кольце/ленте
+// #define LED_COUNT 105 // число светодиодов в кольце/ленте
 #define LED_DT 8      // пин, куда подключен DIN ленты
 
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
@@ -64,14 +64,19 @@ void setup() {
 void loop() {
 	Serial.println("------> loop");
   // digitalWrite(6, LOW);
-  while (BlueTooth.available()) // если что то прислали
+  if (BlueTooth.available()>4) // если что то прислали
   {
     Serial.println("Data recieved!");
     recieveData();
     // delay(1);
   }
-  while (BlueTooth.available()<4)
+  // while (BlueTooth.available()<5)
   	ledMods();
+  // if (BlueTooth.available()>4)
+  // {
+  // 	 Serial.println("Data recieved!");
+  //   recieveData();
+  // }
 }
 
 void ledMods() {
@@ -259,25 +264,27 @@ void sendData() {
   data += "#3:" + String(voltMeter()) + "@";
   BlueTooth.println(data);
 }
-
+// парсинг строки типа #0:2#2:255@
 void parseData(char *data) {
   Serial.print("Parsing data: ");
   Serial.println(data);
-  char *parsed = strtok(data, "#");
-  char **varArr = (char **)malloc(sizeof(char));
-  short int arraySize=0;
+  char *parsed = strtok(data, "#"); // разбор на подстроки по ключу #
+  char **varArr = (char **)malloc(sizeof(char)); // выделение памяти под массив строк
+  short int arraySize=0; //счетчик размера массива
+
   while (parsed!=NULL){
-    varArr=(char**)realloc(varArr,sizeof(char*)*(arraySize+1));
-    varArr[arraySize]=(char*)malloc(sizeof(char*));
+    varArr=(char**)realloc(varArr,sizeof(char*)*(arraySize+1)); // расширение массива для очередной строки
+    varArr[arraySize]=(char*)malloc(sizeof(char*)); // выделение памяти под очередную строку
     varArr[arraySize]=parsed;
     arraySize++;
     parsed=strtok(NULL, "#");
   }
   for (short int j = 0; j < arraySize; ++j) {
-      char *tmp = strtok(varArr[j],":");
-      short int varName = atoi(tmp);
+      char *tmp = strtok(varArr[j],":"); // разбор строки типа 0:1
+      int varName = atoi(tmp); // перевод первой части (0) в int
       tmp = strtok(NULL,":");
-      short int varVal = atoi(tmp);    
+      int varVal = atoi(tmp); // перевод второй части (1) в int
+      // присвоение значений распарсенных переменных
       switch (varName){
           case LED_MODE:
               Serial.print("LED_MODE = ");
@@ -296,6 +303,7 @@ void parseData(char *data) {
               break;         
       }
   }
+  // освобождение памяти
   if (varArr!=NULL)
   {
   	Serial.println("varArr isn't NULL!");
