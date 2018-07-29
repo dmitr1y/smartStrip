@@ -1,10 +1,10 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 5        // число светодиодов в кольце/ленте
+#define LED_COUNT 5 // число светодиодов в кольце/ленте
 // #define LED_COUNT 121        // число светодиодов в кольце/ленте
 // #define LED_COUNT 105 // число светодиодов в кольце/ленте
-#define LED_DT 8      // пин, куда подключен DIN ленты
+#define LED_DT 8 // пин, куда подключен DIN ленты
 
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
@@ -53,7 +53,7 @@ void setup() {
   // pinMode(7, INPUT);     //assigning the input port to Vmeter
 
   // config of interrupts
-  // attachInterrupt(0, recieveData, HIGH);
+  // attachInterrupt(0, interruptFunc, CHANGE);
   // pinMode(6, OUTPUT); // reset for RS-trigger
   // digitalWrite(6, LOW);
   // pinMode(2, INPUT); // interrupt pins
@@ -62,21 +62,39 @@ void setup() {
 }
 
 void loop() {
-	Serial.println("------> loop");
+  Serial.println("------> loop");
   // digitalWrite(6, LOW);
-  if (BlueTooth.available()>4) // если что то прислали
+  if (Serial.available())
+  {
+  	/* code */
+  	ledMode=Serial.parseInt();
+  	Serial.print("readed from Serial: ");
+  	Serial.println(ledMode);
+  	delay(10);
+  }
+  if (BlueTooth.available() > 4) // если что то прислали
   {
     Serial.println("Data recieved!");
     recieveData();
     // delay(1);
   }
   // while (BlueTooth.available()<5)
-  	ledMods();
+  ledMods();
   // if (BlueTooth.available()>4)
   // {
   // 	 Serial.println("Data recieved!");
   //   recieveData();
   // }
+}
+
+void interruptFunc() {
+  Serial.println("interrupt!!!");
+  if (BlueTooth.available() > 4) {
+    Serial.println("    |-> Bluetooth available!");
+    recieveData();
+    Serial.println("    |-> turn on strip");
+    ledMods();
+  }
 }
 
 void ledMods() {
@@ -269,48 +287,30 @@ void parseData(char *data) {
   Serial.print("Parsing data: ");
   Serial.println(data);
   char *parsed = strtok(data, "#"); // разбор на подстроки по ключу #
-  char **varArr = (char **)malloc(sizeof(char)); // выделение памяти под массив строк
-  short int arraySize=0; //счетчик размера массива
 
-  while (parsed!=NULL){
-    varArr=(char**)realloc(varArr,sizeof(char*)*(arraySize+1)); // расширение массива для очередной строки
-    varArr[arraySize]=(char*)malloc(sizeof(char*)); // выделение памяти под очередную строку
-    varArr[arraySize]=parsed;
-    arraySize++;
-    parsed=strtok(NULL, "#");
-  }
-  for (short int j = 0; j < arraySize; ++j) {
-      char *tmp = strtok(varArr[j],":"); // разбор строки типа 0:1
+  while (parsed != NULL) {
+      char *tmp = strtok(parsed, ":"); // разбор строки типа 0:1
       int varName = atoi(tmp); // перевод первой части (0) в int
-      tmp = strtok(NULL,":");
+      tmp = strtok(NULL, ":");
       int varVal = atoi(tmp); // перевод второй части (1) в int
       // присвоение значений распарсенных переменных
-      switch (varName){
+      switch (varName) {
           case LED_MODE:
-              Serial.print("LED_MODE = ");
-              ledMode=varVal;
-              Serial.println(ledMode);
+              // std::cout << "LED_MODE = " << varVal << std::endl;
+           ledMode=varVal;
+           Serial.println(ledMode);
+             break;
+           case LED_BRIGHTNESS:
+               // std::cout << "LED_BRIGHTNESS = " << varVal << std::endl;
+           	max_bright=varVal;
+               break;
+           // case 2:
+           //     break;
+           // case 3:
+           //     break;
+           default:
               break;
-          case LED_BRIGHTNESS:
-              max_bright=varVal;
-              LEDS.setBrightness(max_bright);
-              break;
-          case LED_COLOR:
-              break;
-          case SYS_VOLT:  
-              break;
-          default:
-              break;         
       }
-  }
-  // освобождение памяти
-  if (varArr!=NULL)
-  {
-  	Serial.println("varArr isn't NULL!");
-  	for (short int i = 0; i < arraySize; ++i)
-  		free(varArr[i]);
-  	Serial.println("       deleting header...");
-    free(varArr);
-    Serial.println("       	... OK.");
-  }
+       parsed = strtok(NULL, "#");
+   }
 }
