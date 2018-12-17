@@ -1,7 +1,7 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 5 // число светодиодов в кольце/ленте
+#define LED_COUNT 98 // число светодиодов в кольце/ленте
 // #define LED_COUNT 121        // число светодиодов в кольце/ленте
 // #define LED_COUNT 105 // число светодиодов в кольце/ленте
 #define LED_DT 8 // пин, куда подключен DIN ленты
@@ -9,7 +9,7 @@
 SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
 
 volatile unsigned short int max_bright = 150; // максимальная яркость (0 - 255)
-int ledMode = -1;
+int ledMode = 30;
 
 // цвета мячиков для режима
 byte ballColors[3][3] = {{0xff, 0, 0}, {0xff, 0xff, 0xff}, {0, 0, 0xff}};
@@ -200,8 +200,8 @@ void initLedMods() {
 }
 
 void ledMods() {
-  Serial.print("cur ledMode: ");
-  Serial.println(ledMode);
+  // Serial.print("cur ledMode: ");
+  // Serial.println(ledMode);
   switch (ledMode) {
   case 999:
     break;
@@ -359,13 +359,18 @@ void parseData(char *data) {
       // присвоение значений распарсенных переменных
       switch (varName) {
           case LED_MODE:
-              // std::cout << "LED_MODE = " << varVal << std::endl;
-           ledMode=varVal;
-           Serial.println(ledMode);
+            ledMode=varVal;
+            Serial.print("cur ledMode: ");
+            Serial.println(ledMode);
+           // Serial.println(ledMode);
              break;
            case LED_BRIGHTNESS:
-               // std::cout << "LED_BRIGHTNESS = " << varVal << std::endl;
            	max_bright=varVal;
+            LEDS.setBrightness(max_bright); // ограничить максимальную яркость
+            LEDS.show(); // отослать команду
+            Serial.print("cur BRIGHTNESS: ");
+            Serial.println(max_bright);
+            ledMods();
                break;
            // case 2:
            //     break;
