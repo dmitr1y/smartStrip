@@ -1,7 +1,7 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_COUNT 98 // число светодиодов в кольце/ленте
+#define LED_COUNT 18 // число светодиодов в кольце/ленте
 // #define LED_COUNT 121        // число светодиодов в кольце/ленте
 // #define LED_COUNT 105 // число светодиодов в кольце/ленте
 #define LED_DT 8 // пин, куда подключен DIN ленты
@@ -77,7 +77,7 @@ void loop() {
     Serial.println("Data recieved!");
     recieveData();
     // delay(1);
-    initLedMods();
+    // initLedMods();
   }
   // while (BlueTooth.available()<5)
   ledMods();
@@ -362,7 +362,8 @@ void parseData(char *data) {
             ledMode=varVal;
             Serial.print("cur ledMode: ");
             Serial.println(ledMode);
-           // Serial.println(ledMode);
+            initLedMods();
+            ledMods();        
              break;
            case LED_BRIGHTNESS:
            	max_bright=varVal;
@@ -372,10 +373,6 @@ void parseData(char *data) {
             Serial.println(max_bright);
             ledMods();
                break;
-           // case 2:
-           //     break;
-           // case 3:
-           //     break;
            default:
               break;
       }
