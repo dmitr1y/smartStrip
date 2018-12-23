@@ -6,8 +6,6 @@
 // #define LED_COUNT 105 // число светодиодов в кольце/ленте
 #define LED_DT 8 // пин, куда подключен DIN ленты
 
-SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
-
 volatile unsigned short int max_bright = 150; // максимальная яркость (0 - 255)
 int ledMode = 30;
 
@@ -37,12 +35,12 @@ unsigned short int lcount = 0;          //-ANOTHER COUNTING VAR
 
 // ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
 
-enum BT_DATA { LED_MODE = 0, LED_BRIGHTNESS, LED_COLOR, SYS_VOLT };
+enum BT_DATA { LED_MODE = 0, LED_BRIGHTNESS=1, LED_COLOR=2, SYS_VOLT=3 };
 
 void setup() {
   // config of Serial
   Serial.begin(9600); // открыть порт для связи
-  BlueTooth.begin(9600);
+
 
   // config of led strip
   LEDS.setBrightness(max_bright); // ограничить максимальную яркость
@@ -50,53 +48,18 @@ void setup() {
       leds, LED_COUNT); // настрйоки для нашей ленты (ленты на WS2811, WS2812,
                         // WS2812B)
   one_color_all(0, 0, 0); // погасить все светодиоды
-  // pinMode(7, INPUT);     //assigning the input port to Vmeter
-
-  // config of interrupts
-  // attachInterrupt(0, interruptFunc, CHANGE);
-  // pinMode(6, OUTPUT); // reset for RS-trigger
-  // digitalWrite(6, LOW);
-  // pinMode(2, INPUT); // interrupt pins
 
   LEDS.show(); // отослать команду
 }
 
 void loop() {
-  // Serial.println("------> loop");
-  // digitalWrite(6, LOW);
-  // if (Serial.available())
-  // {
-  // 	/* code */
-  // 	ledMode=Serial.parseInt();
-  // 	Serial.print("readed from Serial: ");
-  // 	Serial.println(ledMode);
-  // 	delay(10);
-  // }
-  if (BlueTooth.available() > 4) // если что то прислали
+  if (Serial.available() > 4) // если что то прислали
   {
-    Serial.println("Data recieved!");
+    // Serial.println("Data recieved!");
     recieveData();
-    // delay(1);
-    // initLedMods();
   }
-  // while (BlueTooth.available()<5)
   ledMods();
-  // if (BlueTooth.available()>4)
-  // {
-  // 	 Serial.println("Data recieved!");
-  //   recieveData();
-  // }
 }
-
-// void interruptFunc() {
-//   Serial.println("interrupt!!!");
-//   if (BlueTooth.available() > 4) {
-//     Serial.println("    |-> Bluetooth available!");
-//     recieveData();
-//     Serial.println("    |-> turn on strip");
-//     ledMods();
-//   }
-// }
 
 void initLedMods() {
   switch (ledMode) {
@@ -302,9 +265,9 @@ void ledMods() {
   case 46:
     BouncingColoredBalls(3, ballColors);
     break; // прыгающие мячики цветные
-  case 889:
-    demo_modeB();
-    break; // короткое демо
+  // case 889:
+  //   demo_modeB();
+  //   break; // короткое демо
   default:
     break;
   }
@@ -312,70 +275,59 @@ void ledMods() {
 }
 
 void recieveData() {
-  Serial.println("recieveData");
+  // Serial.println("recieveData");
   String serialReaded =
-      BlueTooth.readStringUntil('@'); // Until CR (Carriage Return)
+      Serial.readStringUntil('@'); // Until CR (Carriage Return)
   char *buf = (char *)malloc(sizeof(char) * serialReaded.length());
   serialReaded.toCharArray(buf, serialReaded.length() + 1);
   parseData(buf); // parse data
-  BlueTooth.flush();
+  Serial.flush();
   free(buf);
-  sendData();
+  // sendData();
   // digitalWrite(6, HIGH);
-}
-
-float voltMeter() {
-  // Voltmeter
-  float R1 = 100000.00; // resistance of R1 (100K)
-  float R2 = 10000.00;  // resistance of R2 (10K)
-  int val = 0;
-  val = analogRead(7); // reads the analog input
-  float Vout =
-      (val * 5.00) /
-      1024.00; // formula for calculating voltage out i.e. V+, here 5.00
-  float Vin =
-      Vout / (R2 / (R1 + R2)); // formula for calculating voltage in i.e. GND
-  if (Vin < 0.09)              // condition
-    Vin = 0.00;                // statement to quash undesired reading !
-  return Vin;
 }
 
 void sendData() {
   String data = "";
-  data += "#3:" + String(voltMeter()) + "@";
-  BlueTooth.println(data);
+  // data += "#3:" + String(voltMeter()) + "@";
+  Serial.println(data);
 }
-// парсинг строки типа #0:2#2:255@
+// парсинг строки типа #0:2#1:255@
 void parseData(char *data) {
   Serial.print("Parsing data: ");
   Serial.println(data);
   char *parsed = strtok(data, "#"); // разбор на подстроки по ключу #
-
+  bool setMode=false;
   while (parsed != NULL) {
       char *tmp = strtok(parsed, ":"); // разбор строки типа 0:1
-      int varName = atoi(tmp); // перевод первой части (0) в int
+      int varName = atoi(tmp); // перевод первой части (0) в int  
       tmp = strtok(NULL, ":");
       int varVal = atoi(tmp); // перевод второй части (1) в int
+      Serial.println("varName: "+ String(varName)+" varVal: "+String(varVal));
       // присвоение значений распарсенных переменных
       switch (varName) {
           case LED_MODE:
             ledMode=varVal;
             Serial.print("cur ledMode: ");
             Serial.println(ledMode);
-            initLedMods();
-            ledMods();        
-             break;
+            setMode=true;   
+              break;
            case LED_BRIGHTNESS:
            	max_bright=varVal;
             LEDS.setBrightness(max_bright); // ограничить максимальную яркость
             LEDS.show(); // отослать команду
             Serial.print("cur BRIGHTNESS: ");
             Serial.println(max_bright);
-            ledMods();
-               break;
+            setMode=true;
+              break;
            default:
               break;
       }
        parsed = strtok(NULL, "#");
    }
+  if (setMode)
+  {
+    initLedMods();
+    ledMods();
+  }
 }

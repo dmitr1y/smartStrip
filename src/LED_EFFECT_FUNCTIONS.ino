@@ -637,19 +637,6 @@ void RightToLeft(byte red, byte green, byte blue, int EyeSize, int SpeedDelay,
 }
 
 //-------------------------------newKITT---------------------------------------
-void rainbowCycle(int SpeedDelay) {
-  byte *c;
-  uint16_t i, j;
-
-  for (j = 0; j < 256 * 5; j++) { // 5 cycles of all colors on wheel
-    for (i = 0; i < LED_COUNT; i++) {
-      c = Wheel(((i * 256 / LED_COUNT) + j) & 255);
-      setPixel(i, *c, *(c + 1), *(c + 2));
-    }
-    FastLED.show();
-    delay(SpeedDelay);
-  }
-}
 
 byte *Wheel(byte WheelPos) {
   static byte c[3];
@@ -669,9 +656,23 @@ byte *Wheel(byte WheelPos) {
     c[1] = WheelPos * 3;
     c[2] = 255 - WheelPos * 3;
   }
-
   return c;
 }
+
+void rainbowCycle(int SpeedDelay) {
+  byte *c;
+  uint16_t i, j;
+
+  for (j = 0; j < 256 * 5; j++) { // 5 cycles of all colors on wheel
+    for (i = 0; i < LED_COUNT; i++) {
+      c = Wheel(((i * 256 / LED_COUNT) + j) & 255);
+      setPixel(i, *c, *(c + 1), *(c + 2));
+    }
+    FastLED.show();
+    delay(SpeedDelay);
+  }
+}
+
 
 //-------------------------------TwinkleRandom---------------------------------------
 void TwinkleRandom(int Count, int SpeedDelay, boolean OnlyOne) {
