@@ -292,19 +292,22 @@ void sendData() {
   // data += "#3:" + String(voltMeter()) + "@";
   Serial.println(data);
 }
+
 // парсинг строки типа #0:2#1:255@
 void parseData(char *data) {
   Serial.print("Parsing data: ");
   Serial.println(data);
-  char *parsed = strtok(data, "#"); // разбор на подстроки по ключу #
+  char *parsed = strtok(data, "#:"); // разбор на подстроки по ключу #
   bool setMode=false;
+  
   while (parsed != NULL) {
-      char *tmp = strtok(parsed, ":"); // разбор строки типа 0:1
-      int varName = atoi(tmp); // перевод первой части (0) в int  
-      tmp = strtok(NULL, ":");
-      int varVal = atoi(tmp); // перевод второй части (1) в int
+      int varName = atoi(parsed); // перевод первой части (0) в int  
+          
+      parsed = strtok(NULL, "#:");
+      int varVal = atoi(parsed); // перевод второй части (1) в int
+
       Serial.println("varName: "+ String(varName)+" varVal: "+String(varVal));
-      // присвоение значений распарсенных переменных
+
       switch (varName) {
           case LED_MODE:
             ledMode=varVal;
@@ -313,7 +316,7 @@ void parseData(char *data) {
             setMode=true;   
               break;
            case LED_BRIGHTNESS:
-           	max_bright=varVal;
+             max_bright=varVal;
             LEDS.setBrightness(max_bright); // ограничить максимальную яркость
             LEDS.show(); // отослать команду
             Serial.print("cur BRIGHTNESS: ");
@@ -323,8 +326,9 @@ void parseData(char *data) {
            default:
               break;
       }
-       parsed = strtok(NULL, "#");
+      parsed = strtok(NULL, "#:");
    }
+
   if (setMode)
   {
     initLedMods();
