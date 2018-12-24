@@ -46,7 +46,7 @@ void BouncingColoredBalls(int BallCount, byte colors[][3]) {
     Dampening[i] = 0.90 - float(i)/pow(BallCount,2); 
   }
 
-  // while (true) {
+  while (true) {
     for (int i = 0 ; i < BallCount ; i++) {
       TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
       Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i]/1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i]/1000;
@@ -69,7 +69,12 @@ void BouncingColoredBalls(int BallCount, byte colors[][3]) {
     
     showStrip();
     setAll(0,0,0);
-  // }
+    
+    // looping prevention
+    if(recieveData()){
+        break;
+    }
+  }
 }
 
 void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
@@ -93,7 +98,7 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
     Dampening[i] = 0.90 - float(i)/pow(BallCount,2); 
   }
 
-  // while (true) {
+  while (true) {
     for (int i = 0 ; i < BallCount ; i++) {
       TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
       Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i]/1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i]/1000;
@@ -116,7 +121,12 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
     
     showStrip();
     setAll(0,0,0);
-  // }
+
+    // looping prevention
+    if(recieveData()){
+        break;
+    }
+  }
 }
 
 void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
@@ -536,6 +546,32 @@ void rgb_rotation(int SpeedDelay) { //-m27-RGB PROPELLER
       leds[j1] = CHSV(ghue, 255, 255);
       leds[j2] = CHSV(bhue, 255, 255);
     }
+    showStrip();
+    myDelay(SpeedDelay);
+  }
+}
+
+void ems_lightsStrobe(int SpeedDelay) { //-m26-EMERGENCY LIGHTS (STROBE LEFT/RIGHT)
+  int thishue = 0;
+  int top_index= NUM_LEDS / 2;
+  int thathue = (thishue + 160) % 255;
+  for (int x = 0; x < 5; x++) {
+    for (int i = 0; i < top_index; i++) {
+      leds[i] = CHSV(thishue, 255, 255);
+    }
+    showStrip();
+    myDelay(SpeedDelay);
+    setAll(0, 0, 0);
+    showStrip();
+    myDelay(SpeedDelay);
+  }
+  for (int x = 0; x < 5; x++) {
+    for (int i = top_index; i < NUM_LEDS; i++) {
+      leds[i] = CHSV(thathue, 255, 255);
+    }
+    showStrip();
+    myDelay(SpeedDelay);
+    setAll(0, 0, 0);
     showStrip();
     myDelay(SpeedDelay);
   }

@@ -113,6 +113,9 @@ void ledMods() {
   case 19:
     rgb_rotation(ledSpeed);
     break;
+  case 20:
+    ems_lightsStrobe(ledSpeed);
+    break;
   default:
     Serial.println("UNDEFINDED MODE "+String(ledMode));
     break;
