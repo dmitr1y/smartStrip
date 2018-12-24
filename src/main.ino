@@ -16,8 +16,7 @@ enum BT_DATA {
   LED_MODE = 0, 
   LED_BRIGHTNESS=1, 
   LED_COLOR=2, 
-  SYS_VOLT=3, 
-  LED_SPEED = 4 
+  LED_SPEED = 3 
 };
 
 void setup()
