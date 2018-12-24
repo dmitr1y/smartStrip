@@ -3,19 +3,24 @@
 CRGB leds[NUM_LEDS];
 #define PIN 8 
 
-unsigned short int max_bright = 150; // максимальная яркость (0 - 255)
-short int ledMode = 1;
+// dynamically changeable params
+unsigned short int ledBrightness = 150; // максимальная яркость (0 - 255)
+unsigned short int ledMode = 1;
+unsigned short int ledSpeed = 50;
 
-// for tests rainbow fade
-byte initialHue = 0;
-
-enum BT_DATA { LED_MODE = 0, LED_BRIGHTNESS=1, LED_COLOR=2, SYS_VOLT=3 };
+enum BT_DATA { 
+  LED_MODE = 0, 
+  LED_BRIGHTNESS=1, 
+  LED_COLOR=2, 
+  SYS_VOLT=3, 
+  LED_SPEED = 4 
+};
 
 void setup()
 {
 
   LEDS.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
-  LEDS.setBrightness(max_bright);
+  LEDS.setBrightness(ledBrightness);
 
   Serial.begin(9600); // открыть порт для связи
 }
@@ -32,7 +37,7 @@ void loop() {
 
 void myDelay(int mSec) {
   int x=0;
-  while(x< mSec && !recieveData()){
+  while(!recieveData() && (x< mSec)){
       delay(1);
       x++;
   }
@@ -56,7 +61,7 @@ void ledMods() {
     colorWipe(0x00,0x00,0x00, 50);
     break;
   case 4:
-    CylonBounce(0xff, 0, 0, 4, 10, 50);
+    CylonBounce(0xff, 0, 0, 4, ledSpeed, 50);
     break;
   case 5:
     FadeInOut(0xff, 0x00, 0x00); // red
@@ -64,10 +69,10 @@ void ledMods() {
     FadeInOut(0x00, 0x00, 0xff); // blue
     break;
   case 6:
-    RGBLoop();
+    RGBLoop(ledSpeed);
     break;
   case 7:
-    Fire(55,120,15);
+    Fire(55,120,ledSpeed);
     break;
   case 8:
     HalloweenEyes(0xff, 0x00, 0x00, 
@@ -76,37 +81,37 @@ void ledMods() {
                 random(1000, 10000));
     break;
   case 9:
-    NewKITT(0xff, 0, 0, 8, 10, 50);
+    NewKITT(0xff, 0, 0, 8, ledSpeed, 50);
     break;
   case 10:
-    rainbowCycle(20);
+    rainbowCycle(ledSpeed);
     break;
   case 11:
-    TwinkleRandom(20, 100, false);
+    TwinkleRandom(20, ledSpeed, false);
     break;
   case 12:
-    RunningLights(0xff,0xff,0x00, 50);
+    RunningLights(0xff,0xff,0x00, ledSpeed);
     break;
   case 13:
     SnowSparkle(0x10, 0x10, 0x10, 20, random(100,1000));
     break;
   case 14:
-    Sparkle(0xff, 0xff, 0xff, 0);
+    Sparkle(0xff, 0xff, 0xff, ledSpeed);
     break;
   case 15:
-    Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+    Strobe(0xff, 0xff, 0xff, 10, 50, ledSpeed);
     break;
   case 16:
-    theaterChaseRainbow(50);
+    theaterChaseRainbow(ledSpeed);
     break;
   case 17:
-    theaterChase(0xff,0,0,50);
+    theaterChase(0xff,0,0,ledSpeed);
     break;
   case 18:
-    Twinkle(0xff, 0, 0, 10, 100, false);
+    Twinkle(0xff, 0, 0, 10, ledSpeed, false);
     break;
   case 19:
-    spinningRainbow();
+    rgb_rotation(ledSpeed);
     break;
   default:
     Serial.println("UNDEFINDED MODE "+String(ledMode));
@@ -128,21 +133,30 @@ void parseData(char *data) {
       parsed = strtok(NULL, "#:");
       int varVal = atoi(parsed); // перевод второй части (1) в int
 
-      Serial.println("varName: "+ String(varName)+" varVal: "+String(varVal));
+      // Serial.println("varName: "+ String(varName)+" varVal: "+String(varVal));
 
       switch (varName) {
           case LED_MODE:
             ledMode=varVal;
-            Serial.print("cur ledMode: ");
+            Serial.print("cur MODE: ");
             Serial.println(ledMode);            
             break;
 
           case LED_BRIGHTNESS:
-            max_bright=varVal;
-            LEDS.setBrightness(max_bright); // ограничить максимальную яркость
-            // showStrip();
+            ledBrightness=varVal;
+            LEDS.setBrightness(ledBrightness); // ограничить максимальную яркость
+            showStrip();
             Serial.print("cur BRIGHTNESS: ");
-            Serial.println(max_bright);       
+            Serial.println(ledBrightness);       
+            break;
+
+          case LED_COLOR:
+            break;
+
+          case LED_SPEED:
+            ledSpeed=varVal;
+            Serial.print("cur SPEED: ");
+            Serial.println(ledSpeed);    
             break;
 
           default:
@@ -164,6 +178,7 @@ bool recieveData() {
     parseData(buf); // parse data
     Serial.flush();
     free(buf);
+    // ledMods();
     return true;
   }
 

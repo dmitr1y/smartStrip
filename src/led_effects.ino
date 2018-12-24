@@ -176,7 +176,7 @@ void FadeInOut(byte red, byte green, byte blue){
   }
 }
 
-void RGBLoop(){
+void RGBLoop(int SpeedDelay){
   for(int j = 0; j < 3; j++ ) { 
     // Fade IN
     for(int k = 0; k < 256; k++) { 
@@ -186,7 +186,7 @@ void RGBLoop(){
         case 2: setAll(0,0,k); break;
       }
       showStrip();
-      myDelay(3);
+      myDelay(SpeedDelay);
     }
     // Fade OUT
     for(int k = 255; k >= 0; k--) { 
@@ -196,7 +196,7 @@ void RGBLoop(){
         case 2: setAll(0,0,k); break;
       }
       showStrip();
-      myDelay(3);
+      myDelay(SpeedDelay);
     }
   }
 }
@@ -518,27 +518,25 @@ void Twinkle(byte red, byte green, byte blue, int Count, int SpeedDelay, boolean
 
 
 // ------------------- TESTING IS NEEDED ------------------
-void spinningRainbow() {
-  // variable used for the initial hue of the rainbow
-  // we start it out at 0
-  // but since it's static, it'll keep it's value as we change it
-  // static byte initialHue = 0;
-  
-  // increase the hue by 1 each time
-  // if (initialHue == 0) {
-  //   initialHue != initialHue;
-  // }
-  initialHue--;
-  
-  
-  // the amount we want the hue to change between each LED
-  // by dividing the number of hues (255), by the number of LEDs,
-  // this code makes each LED a different color
-  // and covers the entire rainbow spectrum (red, orange, yellow, green, blue, indigo, violet)
-  // unsigned short int changeInHue = 255 / NUM_LEDS;
-  
-  // use FastLED to fill the LEDs with a rainbow
-  fill_rainbow(leds, NUM_LEDS, initialHue);
-  showStrip();
-  myDelay(15);
+
+void rgb_rotation(int SpeedDelay) { //-m27-RGB PROPELLER
+  // idex++;
+  int thishue = 95;
+  for(int j=0; j<NUM_LEDS; j++){
+    int ghue = (thishue + 80) % 255;
+    int bhue = (thishue + 160) % 255;
+    int N3 = int(NUM_LEDS / 3);
+    int N6 = int(NUM_LEDS / 6);
+    int N12 = int(NUM_LEDS / 12);
+    for (int i = 0; i < N3; i++) {
+      int j0 = (j+ i + NUM_LEDS - N12) % NUM_LEDS;
+      int j1 = (j0 + N3) % NUM_LEDS;
+      int j2 = (j1 + N3) % NUM_LEDS;
+      leds[j0] = CHSV(thishue, 255, 255);
+      leds[j1] = CHSV(ghue, 255, 255);
+      leds[j2] = CHSV(bhue, 255, 255);
+    }
+    showStrip();
+    myDelay(SpeedDelay);
+  }
 }
