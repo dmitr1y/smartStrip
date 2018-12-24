@@ -71,7 +71,7 @@ void BouncingColoredBalls(int BallCount, byte colors[][3]) {
     setAll(0,0,0);
     
     // looping prevention
-    if(recieveData()){
+    if(checkInput()){
         break;
     }
   }
@@ -123,7 +123,7 @@ void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
     setAll(0,0,0);
 
     // looping prevention
-    if(recieveData()){
+    if(checkInput()){
         break;
     }
   }
@@ -395,7 +395,7 @@ void rainbowCycle(int SpeedDelay) {
   byte *c;
   uint16_t i, j;
 
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+  for(j=0; j<256; j++) { // 5 cycles of all colors on wheel
     for(i=0; i< NUM_LEDS; i++) {
       c=Wheel(((i * 256 / NUM_LEDS) + j) & 255);
       setPixel(i, *c, *(c+1), *(c+2));

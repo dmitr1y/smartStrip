@@ -5,7 +5,7 @@
 CRGB leds[NUM_LEDS];
 #define PIN 8 
 
-SoftwareSerial BlueTooth(4, 5); // TX, RX for BT
+SoftwareSerial BlueTooth(10, 11); // TX, RX for BT
 
 // dynamically changeable params
 unsigned short int ledBrightness = 150; // максимальная яркость (0 - 255)
@@ -25,26 +25,33 @@ void setup()
   LEDS.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   LEDS.setBrightness(ledBrightness);
   
-  BlueTooth.begin(9600);
+// init
+  setAll(0,0,0);
+  showStrip();
+
+  BlueTooth.begin(38400);
   Serial.begin(9600); // открыть порт для связи
 }
 
 // *** REPLACE FROM HERE ***
 void loop() { 
-
-  if (!recieveData()) // если что то прислали
+  if (!checkInput()) // пока ничего не прислали
   {
     ledMods();
   }
-
+  else{
+    recieveData();
+  }
 }
 
-void myDelay(int mSec) {
-  int x=0;
-  while(!recieveData() && (x< mSec)){
+void myDelay(unsigned short int mSec) {
+  unsigned short int x=0;
+
+  while(!checkInput() && (x< mSec)){
       delay(1);
       x++;
   }
+
 }
 
 void ledMods() {
@@ -169,14 +176,21 @@ void parseData(char *data) {
           default:
             break;
       }
-      ledMods();
       parsed = strtok(NULL, "#:");
    }
+   ledMods();
 }
 
+bool checkInput(){
+   if(BlueTooth.available() > 4){
+    return true;
+  }
+
+  return false;
+}
 
 bool recieveData() {
-  if(BlueTooth.available() > 4){
+  if(checkInput()){
     Serial.println("Data recieved!");
     String serialReaded =
         BlueTooth.readStringUntil('@'); // Until CR (Carriage Return)
