@@ -536,7 +536,7 @@ void rgb_rotation(int SpeedDelay) { //-m27-RGB PROPELLER
     int ghue = (thishue + 80) % 255;
     int bhue = (thishue + 160) % 255;
     int N3 = int(NUM_LEDS / 3);
-    int N6 = int(NUM_LEDS / 6);
+    // int N6 = int(NUM_LEDS / 6);
     int N12 = int(NUM_LEDS / 12);
     for (int i = 0; i < N3; i++) {
       int j0 = (j+ i + NUM_LEDS - N12) % NUM_LEDS;

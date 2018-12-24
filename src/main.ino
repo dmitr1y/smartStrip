@@ -183,7 +183,7 @@ void parseData(char *data) {
 }
 
 bool checkInput(){
-   if(BlueTooth.available() > 4){
+   if(BlueTooth.available() > 4 || Serial.available() > 4){
     return true;
   }
 
@@ -193,12 +193,28 @@ bool checkInput(){
 bool recieveData() {
   if(checkInput()){
     Serial.println("Data recieved!");
-    String serialReaded =
-        BlueTooth.readStringUntil('@'); // Until CR (Carriage Return)
+
+    String serialReaded = "";
+
+    bool isBT = false;
+    if(BlueTooth.available() > 4){
+      serialReaded = BlueTooth.readStringUntil('@'); // Until CR (Carriage Return)
+      isBT= true;
+    } else if(Serial.available() > 4){
+      serialReaded = Serial.readStringUntil('@'); // Until CR (Carriage Return)
+    }
+        
     char *buf = (char *)malloc(sizeof(char) * serialReaded.length());
     serialReaded.toCharArray(buf, serialReaded.length() + 1);
     parseData(buf); // parse data
-    BlueTooth.flush();
+    
+    if(isBT){
+      BlueTooth.flush();        
+    }
+    else{
+      Serial.flush();
+    }
+    
     free(buf);
     // ledMods();
     return true;
