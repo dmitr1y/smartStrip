@@ -128,6 +128,8 @@ void ledMods() {
     break;
   default:
     Serial.println("UNDEFINDED MODE "+String(ledMode));
+    setAll(0,0,0);
+    showStrip();
     break;
   }
   
