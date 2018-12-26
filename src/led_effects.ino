@@ -579,43 +579,55 @@ void ems_lightsStrobe(int SpeedDelay) { //-m26-EMERGENCY LIGHTS (STROBE LEFT/RIG
 // ---------------------------------------------------
 // ---------------------- MSUIC ----------------------
 // ---------------------------------------------------
+
+void music(){
+  EVERY_N_MILLISECONDS(4) {
+    fhtsound();
+  }
+  // showStrip();
+  LEDS.show();
+}
+
+void fhtsound() {  
+  uint8_t micmult = 10;                                         // Bin values are very low, to let's crank 'em up.
+  uint8_t noiseval = 18;   
+
+  hueinc++;                                                   // A cute little hue incrementer.
+  GetFHT();                                                   // Let's take FHT_N samples and crunch 'em.
+// Serial.println(analogRead(inputPin));
+  for (int i= 0; i < NUM_LEDS; i++) {                         // Run through the LED array.
+    int tmp = qsuba(fht_log_out[2*i+2], noiseval);            // Get the sample and subtract the 'quiet' normalized values, but don't go < 0.
+    if (tmp > (leds[i].r + leds[i].g + leds[i].b))            // Refresh an LED only when the intensity is low
+        leds[i] = CHSV(tmp*micmult+hueinc, 255, tmp*micmult); // Note how we really cranked up the tmp value to get BRIGHT LED's. Also increment the hue for fun.
+    leds[i].nscale8(190);                                     // Let's fade the whole thing over time as well.
+  }
+
+} // fhtsound()
+
 void GetFHT() {
+  
   cli();
-  for (int i = 0 ; i < FHT_N ; i++) fht_input[i] = analogRead(inputPin);
+  for (int i = 0 ; i < FHT_N ; i++) fht_input[i] = analogRead(micInputPin) - 512;
   sei();
 
   fht_window();                                               // Window the data for better frequency response.
   fht_reorder();                                              // Reorder the data before doing the fht.
   fht_run();                                                  // Process the data in the fht.
   fht_mag_log();
+  
 } // GetFHT()
 
-void fhtsound() {
-  hueinc++;                                                   // A cute little hue incrementer.
-  GetFHT();                                                   // Let's take FHT_N samples and crunch 'em.
-
-  for (int i= 0; i < NUM_LEDS; i++) {                         // Run through the LED array.
-    int tmp = qsuba(fht_log_out[2*i+2], noiseval);           // Get the sample and subtract the 'quiet' normalized values, but don't go < 0.
-
-    if (tmp > (leds[i].r + leds[i].g + leds[i].b)/2 ){            // Refresh an LED only when the intensity is low
-      leds[i] = CHSV((i*4)+tmp*micmult,tmp*micmult, tmp*micmult);  // Note how we really cranked up the tmp value to get BRIGHT LED's. Also increment the hue for fun.
-      // setPixel(i, (i*4)+tmp*micmult, 255, tmp*micmult); 
-    }
-    leds[i].nscale8(fadetime);                                     // Let's fade the whole thing over time as well.
-  }
-} // fhtsound()
-
-void music(){
-  //    noiseval = map(analogRead(potPin), 0, 1023, 16, 48);          // Adjust sensitivity of cutoff.
-  EVERY_N_MILLISECONDS(13) {
-    fhtsound();
-  }
-  show_at_max_brightness_for_power();
-  showStrip();
-  // Serial.println(LEDS.getFPS(),DEC);          // Display frames per second on the serial monitor.
-      // Serial.println(" ");          // Display frames per second on the serial monitor.
-   // Serial.println(analogRead(inputPin));       // print as an ASCII-encoded decimal         */
-
-}
-
 // ---------------------- MSUIC ----------------------
+
+void fill_grad() {
+  
+  uint8_t starthue = beatsin8(5, 0, 255);
+  uint8_t endhue = beatsin8(7, 0, 255);
+  
+  if (starthue < endhue) {
+    fill_gradient(leds, NUM_LEDS, CHSV(starthue,255,255), CHSV(endhue,255,255), FORWARD_HUES);    // If we don't have this, the colour fill will flip around. 
+  } else {
+    fill_gradient(leds, NUM_LEDS, CHSV(starthue,255,255), CHSV(endhue,255,255), BACKWARD_HUES);
+  }
+  showStrip();
+} // fill_grad()
