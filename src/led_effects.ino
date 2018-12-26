@@ -1,4 +1,3 @@
-
 // UTILS
 
 byte * Wheel(byte WheelPos) {
@@ -576,3 +575,47 @@ void ems_lightsStrobe(int SpeedDelay) { //-m26-EMERGENCY LIGHTS (STROBE LEFT/RIG
     myDelay(SpeedDelay);
   }
 }
+
+// ---------------------------------------------------
+// ---------------------- MSUIC ----------------------
+// ---------------------------------------------------
+void GetFHT() {
+  cli();
+  for (int i = 0 ; i < FHT_N ; i++) fht_input[i] = analogRead(inputPin);
+  sei();
+
+  fht_window();                                               // Window the data for better frequency response.
+  fht_reorder();                                              // Reorder the data before doing the fht.
+  fht_run();                                                  // Process the data in the fht.
+  fht_mag_log();
+} // GetFHT()
+
+void fhtsound() {
+  hueinc++;                                                   // A cute little hue incrementer.
+  GetFHT();                                                   // Let's take FHT_N samples and crunch 'em.
+
+  for (int i= 0; i < NUM_LEDS; i++) {                         // Run through the LED array.
+    int tmp = qsuba(fht_log_out[2*i+2], noiseval);           // Get the sample and subtract the 'quiet' normalized values, but don't go < 0.
+
+    if (tmp > (leds[i].r + leds[i].g + leds[i].b)/2 ){            // Refresh an LED only when the intensity is low
+      leds[i] = CHSV((i*4)+tmp*micmult,tmp*micmult, tmp*micmult);  // Note how we really cranked up the tmp value to get BRIGHT LED's. Also increment the hue for fun.
+      // setPixel(i, (i*4)+tmp*micmult, 255, tmp*micmult); 
+    }
+    leds[i].nscale8(fadetime);                                     // Let's fade the whole thing over time as well.
+  }
+} // fhtsound()
+
+void music(){
+  //    noiseval = map(analogRead(potPin), 0, 1023, 16, 48);          // Adjust sensitivity of cutoff.
+  EVERY_N_MILLISECONDS(13) {
+    fhtsound();
+  }
+  show_at_max_brightness_for_power();
+  showStrip();
+  // Serial.println(LEDS.getFPS(),DEC);          // Display frames per second on the serial monitor.
+      // Serial.println(" ");          // Display frames per second on the serial monitor.
+   // Serial.println(analogRead(inputPin));       // print as an ASCII-encoded decimal         */
+
+}
+
+// ---------------------- MSUIC ----------------------

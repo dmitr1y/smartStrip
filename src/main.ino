@@ -1,7 +1,27 @@
 #include "FastLED.h"
 #include "SoftwareSerial.h"
 
-#define NUM_LEDS 18 
+// ---------------- music ----------------
+#define LOG_OUT 1 // use the log output function
+#define FHT_N 256 // set to 256 point fht
+
+#include <FHT.h>
+
+#define inputPin A5
+
+#define qsubd(x, b) ((x>b)?wavebright:0)                     // A digital unsigned subtraction macro. if result <0, then => 0. Otherwise, take on fixed value.
+#define qsuba(x, b) ((x>b)?x-b:0)                            // Unsigned subtraction macro. if result <0, then => 0.
+
+#define wavebright 128                                        // qsubd result will be this value if subtraction is >0.
+
+uint8_t hueinc = 0;                                               // A hue increment value to make it rotate a bit.
+uint8_t micmult = 25;
+uint8_t fadetime = 900;
+uint8_t noiseval = 30;   
+// ---------------- music ----------------
+
+
+#define NUM_LEDS 98 
 CRGB leds[NUM_LEDS];
 #define PIN 8 
 
@@ -23,7 +43,7 @@ void setup()
 {
   LEDS.addLeds<WS2812B, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   LEDS.setBrightness(ledBrightness);
-  
+  set_max_power_in_volts_and_milliamps(5, 4000); 
 // init
   setAll(0,0,0);
   showStrip();
@@ -125,6 +145,9 @@ void ledMods() {
     break;
   case 20:
     ems_lightsStrobe(ledSpeed);
+    break;
+  case 21:
+    music();
     break;
   default:
     Serial.println("UNDEFINDED MODE "+String(ledMode));
